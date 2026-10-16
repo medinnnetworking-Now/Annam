@@ -19,6 +19,9 @@ export async function signOut(page: Page) {
 }
 
 export async function noSeriousAxe(page: Page) {
+  // Measure the settled page: fonts loaded and no requests in flight, so colour contrast is read correctly.
+  await page.waitForLoadState('networkidle');
+  await page.evaluate(() => document.fonts.ready);
   const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
   const bad = r.violations.filter(v => v.impact === 'serious' || v.impact === 'critical');
   expect(bad.map(v => `${v.id}: ${v.nodes.map(n => n.target.join(' ')).slice(0, 3).join(' | ')}`)).toEqual([]);

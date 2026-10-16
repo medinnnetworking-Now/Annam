@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>അന്നം Annam | Nutrition follow-up platform</title>
+<meta name="description" content="Annam: one patient profile for every plate, every measure and every report.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Noto+Serif+Malayalam:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--leaf:#2E6B47;--leaf-deep:#183D2B;--leaf-soft:#E3EEE6;--rice:#F5F8F3;--ink:#17251E;--muted:#5B6B62;--line:#D6E1D8;--turmeric:#E3A03A;--turmeric-soft:#FBEBD0;--chili:#C2492F;--chili-soft:#F7DDD6;--white:#FFFFFF;--r:10px}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'Hanken Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--ink);background:var(--rice);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--turmeric);outline-offset:2px}
+main:focus,main:focus-visible{outline:none}
+.ml{font-family:'Noto Serif Malayalam',serif}
+a{color:var(--leaf)}
+/* shell */
+header.top{position:sticky;top:0;z-index:20;background:var(--leaf-deep);color:#fff;padding:10px clamp(14px,4vw,32px);padding-top:max(10px,env(safe-area-inset-top));display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;margin-right:auto}
+.brand .ml{font-size:24px;line-height:1}
+.brand small{font-size:13px;color:#BFD6C6;display:block;line-height:1.1}
+.role{display:flex;gap:4px;background:rgba(255,255,255,.08);border-radius:999px;padding:3px}
+.role button{border:0;background:transparent;color:#D8E8DC;padding:6px 12px;border-radius:999px;cursor:pointer;font-size:14px}
+.role button[aria-pressed=true]{background:#fff;color:var(--leaf-deep);font-weight:600}
+nav.links a{color:#D8E8DC;text-decoration:none;font-size:14px;margin-left:10px}
+nav.links a:hover{color:#fff}
+main{max-width:1180px;margin:0 auto;padding:22px clamp(14px,4vw,32px) 60px}
+h1{font-size:clamp(26px,3.4vw,34px);line-height:1.15;margin:0 0 6px;letter-spacing:-.01em}
+h2{font-size:21px;margin:0 0 10px}
+h3{font-size:17px;margin:0 0 8px}
+p.lede{color:var(--muted);margin:0 0 18px;max-width:62ch}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--leaf);background:var(--leaf);color:#fff;padding:9px 16px;border-radius:var(--r);cursor:pointer;font-weight:600;font-size:15px;text-decoration:none}
+.btn.secondary{background:#fff;color:var(--leaf)}
+.btn.ghost{background:transparent;border-color:var(--line);color:var(--ink);font-weight:500}
+.btn.danger{background:#fff;border-color:var(--chili);color:var(--chili)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}
+.muted{color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.chip.ok{background:var(--leaf-soft);color:var(--leaf-deep)}
+.chip.warn{background:var(--turmeric-soft);color:#7A4E08}
+.chip.alert{background:var(--chili-soft);color:#8A2B18}
+.chip.flag{background:#F1F3F1;color:var(--muted);font-weight:500}
+.notice{border-left:4px solid var(--turmeric);background:#fff;padding:10px 14px;border-radius:8px;font-size:14px;color:var(--muted);margin:0 0 18px}
+/* dashboard list */
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 14px}
+.toolbar input[type=search]{flex:1;min-width:200px;border:1px solid var(--line);border-radius:var(--r);padding:9px 12px;background:#fff}
+.plist{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.prow{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,1.2fr) 90px minmax(0,1.3fr) minmax(0,1.2fr);gap:12px;align-items:center;padding:14px 18px;border-top:1px solid var(--line);text-decoration:none;color:inherit}
+.prow:first-child{border-top:0}
+.prow:hover{background:var(--rice)}
+.prow.head{font-size:13px;color:var(--muted);background:#FAFCF9;font-weight:600}
+.prow .name{font-weight:600}
+.prow .score{font-weight:700;font-size:20px;color:var(--leaf-deep)}
+@media (max-width:760px){.prow{grid-template-columns:1fr auto;}.prow .hide-sm{display:none}.prow.head{display:none}}
+/* patient header */
+.phead{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-end;margin-bottom:14px}
+.phead .meta{color:var(--muted);font-size:15px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:0 0 18px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tabs a{padding:10px 14px;text-decoration:none;color:var(--muted);font-weight:600;border-bottom:3px solid transparent;white-space:nowrap}
+.tabs a[aria-current=page]{color:var(--leaf-deep);border-color:var(--leaf)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:860px){.grid2,.grid3{grid-template-columns:1fr}}
+/* score */
+.scorebox{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:center}
+.ring{position:relative;width:150px;height:150px}
+.ring svg{transform:rotate(-90deg)}
+.ring .val{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.ring .val b{font-size:40px;line-height:1;color:var(--leaf-deep)}
+.ring .val span{font-size:13px;color:var(--muted)}
+.comp{margin:0 0 10px}
+.comp .lab{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}
+.bar{height:10px;background:#EDF2EE;border-radius:999px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--leaf);border-radius:999px}
+.bar.t i{background:var(--turmeric)}
+.risk{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:12px 0;border-top:1px solid var(--line)}
+.risk:first-of-type{border-top:0}
+.risk small{grid-column:1/-1;color:var(--muted);font-size:13px}
+details.how{margin-top:12px;font-size:14px}
+details.how summary{cursor:pointer;color:var(--leaf);font-weight:600}
+details.how li{margin:4px 0}
+.spark{width:100%;height:70px}
+.trend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:600px){.trend{grid-template-columns:1fr}}
+.trend .t{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.trend .t b{font-size:15px}
+/* tables */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:#fff}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:9px 12px;text-align:left;border-top:1px solid var(--line);white-space:nowrap}
+thead th{background:#FAFCF9;font-weight:600;color:var(--muted);border-top:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.better{color:var(--leaf)} .worse{color:var(--chili)}
+/* plates */
+.daybar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.daybar input{border:1px solid var(--line);border-radius:var(--r);padding:8px 10px;background:#fff}
+.plates{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.plate{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.plate .top{display:flex;justify-content:space-between;align-items:baseline}
+.plate .pic{aspect-ratio:4/3;border-radius:10px;background:var(--rice);display:grid;place-items:center;overflow:hidden}
+.plate .pic img{width:100%;height:100%;object-fit:cover}
+.plate .tags{display:flex;flex-wrap:wrap;gap:6px}
+.plate .sc{display:flex;justify-content:space-between;align-items:center;font-size:14px}
+.plate .sc b{font-size:18px;color:var(--leaf-deep)}
+.empty{background:#fff;border:1px dashed var(--line);border-radius:14px;padding:26px;text-align:center;color:var(--muted)}
+/* forms and dialog */
+dialog{border:0;border-radius:16px;padding:0;max-width:640px;width:calc(100% - 24px);box-shadow:0 20px 60px rgba(23,37,30,.25)}
+dialog::backdrop{background:rgba(23,37,30,.45)}
+.dlg{padding:20px}
+.dlg h2{margin-bottom:4px}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px;margin:14px 0}
+.form.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:560px){.form,.form.three{grid-template-columns:1fr 1fr}}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:13.5px;font-weight:600;color:var(--muted)}
+.form .full{grid-column:1/-1}
+.form input,.form select,.form textarea{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff;color:var(--ink);font-weight:400;font-size:15px}
+.form textarea{min-height:70px;resize:vertical}
+.form .check{flex-direction:row;align-items:flex-start;gap:8px;font-weight:500;color:var(--ink)}
+.actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:6px}
+fieldset{border:1px solid var(--line);border-radius:12px;margin:0;padding:10px 12px}
+legend{font-size:13.5px;font-weight:600;color:var(--muted);padding:0 4px}
+.platepick{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center}
+@media (max-width:560px){.platepick{grid-template-columns:1fr;justify-items:center}}
+.toggles{display:flex;flex-wrap:wrap;gap:8px}
+.toggles label{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:14px;cursor:pointer;color:var(--ink);font-weight:500;flex-direction:row}
+.toggles input{accent-color:var(--leaf)}
+.err{color:var(--chili);font-size:14px;margin:6px 0 0}
+/* weekly */
+.week{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;margin-bottom:16px}
+@media (max-width:860px){.week{grid-template-columns:1fr}}
+.days{display:grid;gap:6px}
+.drow{display:grid;grid-template-columns:62px minmax(0,1fr) 34px;gap:10px;align-items:center;font-size:14px}
+/* report */
+.report{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;max-width:860px}
+.report .rhead{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;border-bottom:2px solid var(--leaf);padding-bottom:12px;margin-bottom:16px}
+.report .rhead .ml{font-size:28px;color:var(--leaf-deep)}
+.report h3{margin-top:18px}
+.signbox{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:16px}
+.disclaimer{font-size:12.5px;color:var(--muted);margin-top:16px}
+@media print{header.top,.tabs,.noprint,.notice{display:none!important}body{background:#fff}main{padding:0}.report{border:0;padding:0;max-width:none}}
+@media (prefers-reduced-motion:no-preference){.ring circle.fg{transition:stroke-dashoffset .8s ease}}
+.about{max-width:760px}
+.about li{margin:6px 0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--leaf-deep);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#/" aria-label="Annam home">
+    <svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="20" rx="19" ry="12" transform="rotate(-25 20 20)" fill="#5E9A55"/><circle cx="20" cy="20" r="10" fill="#fff"/><path d="M20 20 L20 10 A10 10 0 0 1 30 20 Z" fill="#E3A03A"/><path d="M20 20 L20 30 A10 10 0 0 1 10 20 A10 10 0 0 1 20 10 Z" fill="#7DB06B"/></svg>
+    <span><span class="ml">അന്നം</span><small>Annam</small></span>
+  </a>
+  <div class="role" role="group" aria-label="View as">
+    <button data-role="nutritionist">Nutritionist</button><button data-role="doctor">Doctor</button><button data-role="patient">Patient</button>
+  </div>
+  <nav class="links"><a href="#/">Patients</a><a href="#/about">About</a></nav>
+</header>
+<main id="app" tabindex="-1"></main>
+<dialog id="dlg"></dialog>
+<script>
+'use strict';
+/* ---------------- storage ---------------- */
+const KEY = 'annam-v1';
+const DAY = 864e5;
+const today = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+const iso = d => { const x = new Date(d); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); };
+const addDays = (d, n) => new Date(new Date(d).getTime() + n * DAY);
+const uid = () => Math.random().toString(36).slice(2, 10);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let S;
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('Storage is full. Export your data, then remove some photos.'); } }
+function load() { try { const raw = localStorage.getItem(KEY); if (raw) return JSON.parse(raw); } catch (e) {} return seed(); }
+
+/* ---------------- sample data ---------------- */
+function seed() {
+  const t = today();
+  const mk = (id, name, age, sex, start, fam, act) => ({ id, name, age, sex, referrer: 'RM Clinic', programme: '3-week one-to-one', start: iso(start), family: fam, activity: act, consent: true, sample: true, visits: [], plates: [], reviews: {}, checkins: {}, activity_log: [], approval: null, nextStep: '' });
+  const A = mk('a', 'Sample patient A', 47, 'M', addDays(t, -9), 'one', 'mild');
+  A.visits.push({ id: uid(), label: 'Baseline', date: iso(addDays(t, -9)), weight: 78, height: 168, waist: 98, hip: 101, sbp: 142, dbp: 90, fpg: 138, ppg: 196, hba1c: 7.1, tc: 212, ldl: 132, hdl: 38, tg: 210, ast: 38, alt: 52, plt: 240, creat: 0.9 });
+  const B = mk('b', 'Sample patient B', 52, 'F', addDays(t, -24), 'both', 'sedentary');
+  B.visits.push({ id: uid(), label: 'Baseline', date: iso(addDays(t, -24)), weight: 71, height: 155, waist: 94, hip: 104, sbp: 148, dbp: 92, fpg: 126, ppg: 188, hba1c: 6.6, tc: 220, ldl: 140, hdl: 44, tg: 188, ast: 30, alt: 41, plt: 260, creat: 0.8 });
+  B.visits.push({ id: uid(), label: 'Week 3 check-in', date: iso(addDays(t, -3)), weight: 69.4, height: 155, waist: 91, hip: 102, sbp: 136, dbp: 86, fpg: 112, ppg: 162, hba1c: 6.6, tc: 206, ldl: 128, hdl: 45, tg: 154, ast: 27, alt: 34, plt: 258, creat: 0.8 });
+  const C = mk('c', 'Sample patient C', 38, 'M', addDays(t, -1), 'none', 'moderate');
+  C.visits.push({ id: uid(), label: 'Baseline', date: iso(addDays(t, -1)), weight: 84, height: 175, waist: 96, hip: 100, sbp: 128, dbp: 84, fpg: 104, ppg: 150, hba1c: 5.9, tc: 198, ldl: 124, hdl: 41, tg: 172, ast: 26, alt: 39, plt: 230, creat: 1.0 });
+  const meals = ['Breakfast', 'Lunch', 'Dinner'];
+  const fill = (P, days, quality) => {
+    for (let d = 0; d < days; d++) {
+      const date = iso(addDays(P.start, d));
+      meals.forEach((m, k) => {
+        if ((d + k) % 7 === 6) return;
+        const good = ((d * 3 + k * 5) % 10) / 10 < quality;
+        const tags = { veg: good || k === 1, protein: good || k === 2, grain: true, fruit: k === 0 && good, dairy: k === 0 };
+        const flags = { oil: !good && k !== 0, sweet: !good && k === 0, upf: false };
+        const sug = suggest(tags, flags);
+        P.plates.push({ id: uid(), date, time: ['08:15', '13:10', '20:20'][k], meal: m, photo: null, tags, flags, score: sug, comment: good ? '' : (flags.oil ? 'Less oil next time' : 'Swap the sweet tea'), reviewed: true });
+      });
+      P.activity_log.push({ date, minutes: 15 + ((d * 7) % 25) });
+    }
+  };
+  fill(A, 9, 0.62); fill(B, 21, 0.72);
+  A.checkins = { 1: true }; B.checkins = { 1: true, 2: true, 3: true };
+  A.reviews = { 1: { text: 'Good start. Breakfast still carries sweet tea, and dinners are oil-heavy.', goals: 'Swap sweet tea for plain tea. Add a pulse at dinner.' } };
+  B.reviews = { 1: { text: 'Logging well. Rice portions large at lunch.', goals: 'Half the rice, add thoran.' }, 2: { text: 'Portions better. Walk is irregular.', goals: 'Walk 20 minutes after dinner.' }, 3: { text: 'Consistent week. Ready for the 12-week programme.', goals: 'Keep the plate pattern. Reduce oil in curries.' } };
+  B.nextStep = 'Continue to the 12-week programme';
+  return { role: 'nutritionist', patients: [A, B, C], seededOn: iso(t) };
+}
+
+/* ---------------- clinical calculations ---------------- */
+const num = v => (v === '' || v == null || isNaN(+v)) ? null : +v;
+function bmi(v) { return v && num(v.weight) && num(v.height) ? +(v.weight / Math.pow(v.height / 100, 2)).toFixed(1) : null; }
+function suggest(tags, flags) { let s = (tags.veg ? 4 : 0) + (tags.protein ? 3 : 0) + (tags.grain ? 2 : 0) + (tags.fruit ? 1 : 0); s -= (flags.oil ? 1.5 : 0) + (flags.sweet ? 1.5 : 0) + (flags.upf ? 2 : 0); return Math.max(0, Math.min(10, Math.round(s))); }
+const band = (x, steps) => { for (const [lim, pts] of steps) if (x <= lim) return pts; return steps[steps.length - 1][1]; };
+function metabolic(v) {
+  const parts = [];
+  if (num(v.fpg) != null) parts.push(['Fasting glucose', band(v.fpg, [[99, 10], [125, 6], [Infinity, 2]]), 10]);
+  if (num(v.hba1c) != null) parts.push(['HbA1c', band(v.hba1c, [[5.6, 10], [6.4, 6], [Infinity, 2]]), 10]);
+  if (num(v.sbp) != null && num(v.dbp) != null) { const s = v.sbp, d = v.dbp; parts.push(['Blood pressure', (s < 120 && d < 80) ? 10 : (s < 130 && d < 85) ? 7 : (s < 140 && d < 90) ? 4 : 1, 10]); }
+  if (num(v.tg) != null) parts.push(['Triglycerides', band(v.tg, [[149, 10], [199, 6], [Infinity, 2]]), 10]);
+  return parts;
+}
+function body(v, sex) {
+  const parts = []; const b = bmi(v);
+  if (b != null) parts.push(['BMI', band(b, [[22.9, 10], [24.9, 6], [Infinity, 2]]), 10]);
+  if (num(v.waist) != null) { const lim = sex === 'F' ? 80 : 90; parts.push(['Waist', v.waist < lim ? 10 : v.waist < lim + 10 ? 5 : 1, 10]); }
+  return parts;
+}
+function weekOf(P, date) { return Math.floor((new Date(date) - new Date(P.start)) / (7 * DAY)) + 1; }
+function elapsedDays(P) { return Math.max(1, Math.min(21, Math.floor((today() - new Date(P.start)) / DAY) + 1)); }
+function dietScore(P, upTo) {
+  const lim = upTo ? new Date(upTo) : today(); const from = addDays(lim, -6);
+  const ps = P.plates.filter(p => p.reviewed && new Date(p.date) >= from && new Date(p.date) <= lim);
+  if (!ps.length) return null; return ps.reduce((a, p) => a + p.score, 0) / ps.length;
+}
+function behaviour(P, upTo) {
+  const lim = upTo ? new Date(upTo) : today(); const start = new Date(P.start);
+  const days = Math.max(1, Math.min(21, Math.floor((lim - start) / DAY) + 1));
+  const logged = new Set(P.plates.filter(p => new Date(p.date) <= lim).map(p => p.date)).size;
+  const weeks = Math.max(1, Math.ceil(days / 7)); const att = Object.keys(P.checkins).filter(k => P.checkins[k] && +k <= weeks).length;
+  const mins = P.activity_log.filter(a => new Date(a.date) > addDays(lim, -7) && new Date(a.date) <= lim).reduce((a, x) => a + x.minutes, 0);
+  return [['Days logged', Math.min(7, 7 * logged / days), 7], ['Check-ins attended', Math.min(4, 4 * att / weeks), 4], ['Activity, last 7 days', Math.min(4, 4 * mins / 150), 4]];
+}
+function scoreAt(P, v) {
+  if (!v) return null;
+  const m = metabolic(v), b = body(v, P.sex);
+  const d = dietScore(P, v.date), be = behaviour(P, v.date);
+  const groups = [
+    { name: 'Metabolic', max: 40, parts: m, got: m.reduce((a, x) => a + x[1], 0), of: m.reduce((a, x) => a + x[2], 0) },
+    { name: 'Body', max: 20, parts: b, got: b.reduce((a, x) => a + x[1], 0), of: b.reduce((a, x) => a + x[2], 0) },
+    { name: 'Diet quality', max: 25, parts: d == null ? [] : [['Average plate score', d, 10]], got: d == null ? 0 : d, of: d == null ? 0 : 10 },
+    { name: 'Behaviour', max: 15, parts: be, got: be.reduce((a, x) => a + x[1], 0), of: 15 }];
+  let total = 0, possible = 0;
+  groups.forEach(g => { g.points = g.of ? g.max * g.got / g.of : null; if (g.points != null) { total += g.points; possible += g.max; } });
+  return { groups, score: possible ? Math.round(100 * total / possible) : null, complete: possible === 100 };
+}
+function idrs(P, v) {
+  if (!v || num(v.waist) == null) return null;
+  const age = P.age < 35 ? 0 : P.age < 50 ? 20 : 30;
+  const w = P.sex === 'F' ? (v.waist < 80 ? 0 : v.waist < 90 ? 10 : 20) : (v.waist < 90 ? 0 : v.waist < 100 ? 10 : 20);
+  const act = { vigorous: 0, moderate: 10, mild: 20, sedentary: 30 }[P.activity] ?? 20;
+  const fam = { none: 0, one: 10, both: 20 }[P.family] ?? 0;
+  const s = age + w + act + fam; return { s, cat: s >= 60 ? 'High' : s >= 30 ? 'Moderate' : 'Low' };
+}
+function fib4(P, v) {
+  if (!v || [v.ast, v.alt, v.plt].some(x => num(x) == null) || v.plt <= 0 || v.alt <= 0) return null;
+  const s = +(P.age * v.ast / (v.plt * Math.sqrt(v.alt))).toFixed(2);
+  return { s, cat: s < 1.3 ? 'Low' : s <= 2.67 ? 'Indeterminate' : 'High' };
+}
+function redFlags(v) {
+  const f = []; if (!v) return f;
+  if ((num(v.sbp) || 0) >= 160 || (num(v.dbp) || 0) >= 100) f.push('Blood pressure 160/100 or higher');
+  if ((num(v.fpg) || 0) >= 250) f.push('Fasting glucose 250 mg/dL or higher');
+  if (num(v.fpg) != null && v.fpg < 70) f.push('Fasting glucose below 70 mg/dL');
+  return f;
+}
+function summary(P) {
+  const vs = [...P.visits].sort((a, b) => a.date.localeCompare(b.date));
+  const base = vs[0], last = vs[vs.length - 1], prev = vs[vs.length - 2];
+  const sc = scoreAt(P, last), sb = scoreAt(P, base), sp = prev ? scoreAt(P, prev) : null;
+  const f4 = fib4(P, last); const flags = redFlags(last); if (f4 && f4.cat === 'High') flags.push('FIB-4 above 2.67');
+  let status = 'On track', why = 'Score is steady or improving.';
+  if (flags.length) { status = 'See your doctor'; why = flags.join('. ') + '.'; }
+  else if (sc && sc.score != null && (sc.score < 50 || (sp && sp.score != null && sc.score < sp.score - 5))) { status = 'Needs attention'; why = sc.score < 50 ? 'Score is below 50.' : 'Score fell since the last visit.'; }
+  return { vs, base, last, sc, sb, idrs: idrs(P, last), idrsB: idrs(P, base), f4, f4B: fib4(P, base), flags, status, why };
+}
+const statusCls = s => s === 'On track' ? 'ok' : s === 'Needs attention' ? 'warn' : 'alert';
+
+/* ---------------- plate graphic ---------------- */
+function plateSVG(tags, size = 120, label) {
+  const c = size / 2, r = size * 0.42, ri = r * 0.86;
+  const on = (k, col) => tags && tags[k] ? col : '#E9EEE9';
+  const arc = (a0, a1) => { const p = a => [c + ri * Math.cos(a * Math.PI / 180), c + ri * Math.sin(a * Math.PI / 180)]; const [x0, y0] = p(a0), [x1, y1] = p(a1); const big = (a1 - a0) > 180 ? 1 : 0; return `M${c} ${c} L${x0.toFixed(1)} ${y0.toFixed(1)} A${ri} ${ri} 0 ${big} 1 ${x1.toFixed(1)} ${y1.toFixed(1)} Z`; };
+  const side = (k, col, cx) => `<circle cx="${cx}" cy="${size * 0.13}" r="${size * 0.07}" fill="${on(k, col)}" stroke="#fff" stroke-width="2"/>`;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img" aria-label="${esc(label || 'Plate')}"><circle cx="${c}" cy="${c}" r="${r}" fill="#fff" stroke="#D9D3C4" stroke-width="${size * 0.02}"/><path d="${arc(90, 270)}" fill="${on('veg', '#7DB06B')}" stroke="#fff" stroke-width="2"/><path d="${arc(270, 360)}" fill="${on('protein', '#E3A03A')}" stroke="#fff" stroke-width="2"/><path d="${arc(0, 90)}" fill="${on('grain', '#E9DDC3')}" stroke="#fff" stroke-width="2"/>${side('fruit', '#D8553F', size * 0.84)}${side('dairy', '#CFE0F0', size * 0.97 - size * 0.02)}</svg>`;
+}
+const TAGS = [['veg', 'Vegetables'], ['protein', 'Protein and pulses'], ['grain', 'Grains and millets'], ['fruit', 'Fruit'], ['dairy', 'Dairy']];
+const FLAGS = [['oil', 'Too much oil'], ['sweet', 'Sweet drink or dessert'], ['upf', 'Ultra-processed']];
+
+/* ---------------- small charts ---------------- */
+function spark(vals, col) {
+  const v = vals.filter(x => x != null); if (v.length < 2) return '<p class="muted" style="margin:6px 0 0;font-size:13px">One reading so far</p>';
+  const w = 220, h = 60, min = Math.min(...v), max = Math.max(...v), rng = (max - min) || 1;
+  const pts = v.map((x, i) => [8 + i * (w - 16) / (v.length - 1), h - 8 - (x - min) * (h - 16) / rng]);
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="${pts.map(p => p.map(n => n.toFixed(1)).join(',')).join(' ')}"/>${pts.map(p => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="4" fill="${col}"/>`).join('')}</svg>`;
+}
+function ring(score, prev) {
+  const r = 62, C = 2 * Math.PI * r, s = score == null ? 0 : score;
+  const delta = (prev != null && score != null) ? score - prev : null;
+  return `<div class="ring"><svg width="150" height="150" viewBox="0 0 150 150" aria-hidden="true"><circle cx="75" cy="75" r="${r}" fill="none" stroke="#E6EDE7" stroke-width="14"/><circle class="fg" cx="75" cy="75" r="${r}" fill="none" stroke="#2E6B47" stroke-width="14" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - s / 100)).toFixed(1)}"/></svg><div class="val"><div><b>${score == null ? 'None' : score}</b><br><span>${delta == null ? 'Health score' : (delta >= 0 ? '+' : '') + delta + ' points'}</span></div></div></div>`;
+}
+
+/* ---------------- shell, roles, routing ---------------- */
+const app = document.getElementById('app'); const dlg = document.getElementById('dlg');
+function toast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); }
+function setRole(r) { S.role = r; save(); document.querySelectorAll('.role button').forEach(b => b.setAttribute('aria-pressed', b.dataset.role === r)); if (r === 'patient') location.hash = '#/p/a'; else route(); }
+document.querySelectorAll('.role button').forEach(b => b.addEventListener('click', () => setRole(b.dataset.role)));
+const can = {
+  editMeasures: () => S.role !== 'patient',
+  addPlate: () => S.role === 'patient' || S.role === 'nutritionist',
+  review: () => S.role === 'nutritionist',
+  approve: () => S.role === 'doctor',
+  addPatient: () => S.role !== 'patient'
+};
+const P_ = id => S.patients.find(p => p.id === id);
+function route() {
+  const h = location.hash || '#/'; const m = h.match(/^#\/p\/([^/]+)(?:\/(\w+))?/);
+  if (S.role === 'patient' && !(m && m[1] === 'a') && h !== '#/about') { location.hash = '#/p/a'; return; }
+  if (h === '#/about') renderAbout(); else if (m) renderPatient(m[1], m[2] || 'overview'); else renderList();
+  app.focus({ preventScroll: true });
+}
+window.addEventListener('hashchange', route);
+
+/* ---------------- patient list ---------------- */
+function renderList() {
+  const q = (window.__q || '').toLowerCase();
+  const rows = S.patients.filter(p => p.name.toLowerCase().includes(q)).map(P => {
+    const s = summary(P); const day = Math.min(21, Math.floor((today() - new Date(P.start)) / DAY) + 1);
+    const lastPlate = P.plates.length ? [...P.plates].sort((a, b) => b.date.localeCompare(a.date))[0].date : null;
+    return `<a class="prow" href="#/p/${P.id}"><div><div class="name">${esc(P.name)}</div><div class="muted" style="font-size:14px">${esc(P.age)} ${P.sex === 'F' ? 'female' : 'male'}, referred by ${esc(P.referrer)}</div></div><div class="hide-sm">${esc(P.programme)}<div class="muted" style="font-size:14px">Day ${day} of 21</div></div><div class="score">${s.sc && s.sc.score != null ? s.sc.score : 'None'}</div><div class="hide-sm"><span class="chip ${statusCls(s.status)}">${s.status}</span></div><div class="hide-sm muted" style="font-size:14px">${lastPlate ? 'Last plate ' + lastPlate : 'No plates yet'}</div></a>`;
+  }).join('');
+  app.innerHTML = `<h1>Patients</h1><p class="lede">Everyone in a programme, with their latest score and status. Open a patient to see plates, measures and the report.</p>
+  <p class="notice">This is a working prototype. Data stays in this browser, and the patients shown are invented samples. Do not enter real patient information.</p>
+  <div class="toolbar"><input type="search" id="q" placeholder="Search by name" aria-label="Search patients" value="${esc(window.__q || '')}">${can.addPatient() ? '<button class="btn" id="addP">Add patient</button>' : ''}</div>
+  <div class="plist"><div class="prow head"><div>Patient</div><div>Programme</div><div>Score</div><div>Status</div><div>Plates</div></div>${rows || '<div class="empty">No patients match that search.</div>'}</div>`;
+  document.getElementById('q').addEventListener('input', e => { window.__q = e.target.value; const pos = e.target.selectionStart; renderList(); const n = document.getElementById('q'); n.focus(); n.setSelectionRange(pos, pos); });
+  const ab = document.getElementById('addP'); if (ab) ab.addEventListener('click', openAddPatient);
+}
+function openAddPatient() {
+  dlg.innerHTML = `<form class="dlg" method="dialog" id="fP"><h2>Add patient</h2><p class="muted" style="margin:0">Opens a profile at the walk-in. Measures come next.</p>
+  <div class="form"><label class="full">Name<input name="name" required maxlength="80"></label>
+  <label>Age<input name="age" type="number" min="18" max="100" required></label>
+  <label>Sex<select name="sex"><option value="M">Male</option><option value="F">Female</option></select></label>
+  <label>Referred by<input name="referrer" value="RM Clinic" maxlength="60"></label>
+  <label>Programme start<input name="start" type="date" value="${iso(today())}" required></label>
+  <label>Family history of diabetes<select name="family"><option value="none">Neither parent</option><option value="one">One parent</option><option value="both">Both parents</option></select></label>
+  <label>Physical activity<select name="activity"><option value="vigorous">Vigorous exercise or strenuous work</option><option value="moderate">Moderate exercise</option><option value="mild" selected>Mild exercise</option><option value="sedentary">No exercise, sedentary</option></select></label>
+  <label class="check full"><input type="checkbox" name="consent" required> The patient has given written consent to join the programme and to share their data with the care team.</label></div>
+  <div class="actions"><button type="button" class="btn ghost" id="cancel">Cancel</button><button class="btn" type="submit">Add patient</button></div></form>`;
+  dlg.showModal(); dlg.querySelector('#cancel').onclick = () => dlg.close();
+  dlg.querySelector('#fP').addEventListener('submit', e => { e.preventDefault(); const f = new FormData(e.target); const P = { id: uid(), name: f.get('name').trim(), age: +f.get('age'), sex: f.get('sex'), referrer: f.get('referrer').trim() || 'RM Clinic', programme: '3-week one-to-one', start: f.get('start'), family: f.get('family'), activity: f.get('activity'), consent: true, visits: [], plates: [], reviews: {}, checkins: {}, activity_log: [], approval: null, nextStep: '' }; S.patients.push(P); save(); dlg.close(); toast('Patient added'); location.hash = '#/p/' + P.id + '/measures'; });
+}
+
+/* ---------------- patient views ---------------- */
+function renderPatient(id, tab) {
+  const P = P_(id); if (!P) { app.innerHTML = `<div class="empty">That patient is not in this browser. <a href="#/">Back to patients</a></div>`; return; }
+  const s = summary(P);
+  const tabs = [['overview', 'Overview'], ['measures', 'Measures'], ['plates', 'Plates'], ['audit', 'Weekly audit'], ['report', 'Report']];
+  const day = Math.min(21, Math.floor((today() - new Date(P.start)) / DAY) + 1);
+  app.innerHTML = `<div class="phead"><div><h1>${esc(P.name)}</h1><div class="meta">${esc(P.age)} ${P.sex === 'F' ? 'female' : 'male'}, referred by ${esc(P.referrer)}. ${esc(P.programme)}, day ${day} of 21.</div></div><span class="chip ${statusCls(s.status)}" title="${esc(s.why)}">${s.status}</span></div>
+  <nav class="tabs" aria-label="Patient sections">${tabs.map(([k, l]) => `<a href="#/p/${P.id}/${k}" ${k === tab ? 'aria-current="page"' : ''}>${l}</a>`).join('')}</nav><div id="tab"></div>`;
+  const el = document.getElementById('tab');
+  ({ overview: tOverview, measures: tMeasures, plates: tPlates, audit: tAudit, report: tReport }[tab] || tOverview)(P, s, el);
+}
+function tOverview(P, s, el) {
+  if (!s.last) { el.innerHTML = `<div class="empty"><p>No measures yet. Record the baseline anthropometry and labs to calculate the first score.</p>${can.editMeasures() ? `<a class="btn" href="#/p/${P.id}/measures">Record baseline</a>` : ''}</div>`; return; }
+  const g = s.sc.groups;
+  const comps = g.map(x => `<div class="comp"><div class="lab"><span>${x.name}</span><span>${x.points == null ? 'No data yet' : x.points.toFixed(0) + ' of ' + x.max}</span></div><div class="bar ${x.name === 'Diet quality' || x.name === 'Behaviour' ? 't' : ''}"><i style="width:${x.points == null ? 0 : (100 * x.points / x.max).toFixed(0)}%"></i></div></div>`).join('');
+  const rk = (t, now, was, note) => `<div class="risk"><b>${t}</b><span class="chip ${now ? (now.cat === 'Low' ? 'ok' : now.cat === 'High' ? 'alert' : 'warn') : 'flag'}">${now ? now.cat + ' (' + now.s + ')' : 'Needs data'}</span><small>${note}${was && now && s.vs.length > 1 ? ' At baseline: ' + was.cat + ' (' + was.s + ').' : ''}</small></div>`;
+  const ser = k => s.vs.map(v => k === 'bmi' ? bmi(v) : num(v[k]));
+  el.innerHTML = `<div class="grid2"><section class="panel"><h2>Health score</h2><div class="scorebox">${ring(s.sc.score, s.vs.length > 1 && s.sb ? s.sb.score : null)}<div>${comps}</div></div>
+  ${s.sc.complete ? '' : '<p class="muted" style="font-size:14px;margin:8px 0 0">Based on the data recorded so far. Missing parts are left out and the score is scaled.</p>'}
+  <details class="how"><summary>How the score works</summary><ul><li>Metabolic, 40 points: fasting glucose, HbA1c, blood pressure and triglycerides.</li><li>Body, 20 points: BMI with Asian Indian cut-offs of 23 and 25, and waist under 90 cm for men or 80 cm for women.</li><li>Diet quality, 25 points: the average plate score over the last 7 days.</li><li>Behaviour, 15 points: days logged, check-ins attended, and activity against 150 minutes a week.</li><li>These weights are a draft. The clinical lead sets and reviews them.</li></ul></details></section>
+  <section class="panel"><h2>Risk</h2>${rk('Diabetes risk', s.idrs, s.idrsB, 'Indian Diabetes Risk Score, from age, waist, activity and family history. 60 or more is high.')}${rk('Liver fibrosis', s.f4, s.f4B, 'FIB-4, from age, AST, ALT and platelets. Below 1.3 is low, above 2.67 is high. Interpret with care under 35 or over 65.')}
+  <div class="risk"><b>Cardiovascular risk</b><span class="chip flag">Not calculated</span><small>The clinical lead chooses a chart validated for South Asia before this is shown.</small></div>
+  <div class="risk"><b>Status</b><span class="chip ${statusCls(s.status)}">${s.status}</span><small>${esc(s.why)}</small></div></section></div>
+  <section class="panel" style="margin-top:16px"><h2>Trends</h2><div class="trend"><div class="t"><b>Weight, kg</b>${spark(ser('weight'), '#2E6B47')}</div><div class="t"><b>Waist, cm</b>${spark(ser('waist'), '#E3A03A')}</div><div class="t"><b>Systolic pressure, mmHg</b>${spark(ser('sbp'), '#C2492F')}</div></div></section>`;
+}
+const FIELDS = [['weight', 'Weight', 'kg'], ['height', 'Height', 'cm'], ['waist', 'Waist', 'cm'], ['hip', 'Hip', 'cm'], ['sbp', 'Systolic BP', 'mmHg'], ['dbp', 'Diastolic BP', 'mmHg'], ['fpg', 'Fasting glucose', 'mg/dL'], ['ppg', 'Post-meal glucose', 'mg/dL'], ['hba1c', 'HbA1c', '%'], ['tc', 'Total cholesterol', 'mg/dL'], ['ldl', 'LDL', 'mg/dL'], ['hdl', 'HDL', 'mg/dL'], ['tg', 'Triglycerides', 'mg/dL'], ['ast', 'AST', 'U/L'], ['alt', 'ALT', 'U/L'], ['plt', 'Platelets', '10⁹/L'], ['creat', 'Creatinine', 'mg/dL']];
+function tMeasures(P, s, el) {
+  const vs = s.vs;
+  const head = `<tr><th>Measure</th>${vs.map(v => `<th class="num">${esc(v.label)}<br><span class="muted" style="font-weight:400">${esc(v.date)}</span></th>`).join('')}</tr>`;
+  const rows = [['bmi', 'BMI', 'kg/m²'], ...FIELDS].map(([k, l, u]) => `<tr><td>${l} <span class="muted">${u}</span></td>${vs.map(v => { const x = k === 'bmi' ? bmi(v) : num(v[k]); return `<td class="num">${x == null ? '' : x}</td>`; }).join('')}</tr>`).join('');
+  el.innerHTML = `<div class="toolbar" style="justify-content:space-between"><p class="muted" style="margin:0">Anthropometry and lab values, by visit. The score and risk recalculate from the latest visit.</p>${can.editMeasures() ? `<button class="btn" id="addV">${vs.length ? 'Record a visit' : 'Record baseline'}</button>` : ''}</div>
+  ${vs.length ? `<div class="tablewrap"><table><thead>${head}</thead><tbody>${rows}</tbody></table></div>` : '<div class="empty">No visits recorded yet.</div>'}
+  <p class="muted" style="font-size:14px">HbA1c reflects about three months of glucose, so expect it to change at 12 weeks rather than at week 3.</p>`;
+  const b = document.getElementById('addV'); if (b) b.onclick = () => openVisit(P);
+}
+function openVisit(P) {
+  const first = !P.visits.length;
+  dlg.innerHTML = `<form class="dlg" id="fV"><h2>${first ? 'Record baseline' : 'Record a visit'}</h2><p class="muted" style="margin:0">Leave a field empty if it was not measured.</p>
+  <div class="form three"><label>Visit<select name="label">${['Baseline', 'Week 3 check-in', 'Week 12 follow-up', 'Other visit'].map(o => `<option ${(!first && o === 'Week 3 check-in') || (first && o === 'Baseline') ? 'selected' : ''}>${o}</option>`).join('')}</select></label><label>Date<input type="date" name="date" value="${iso(today())}" required></label><span></span>
+  ${FIELDS.map(([k, l, u]) => `<label>${l} (${u})<input name="${k}" type="number" step="any" min="0" inputmode="decimal"></label>`).join('')}</div>
+  <p class="err" id="vErr" hidden></p><div class="actions"><button type="button" class="btn ghost" id="cancel">Cancel</button><button class="btn" type="submit">Save visit</button></div></form>`;
+  dlg.showModal(); dlg.querySelector('#cancel').onclick = () => dlg.close();
+  dlg.querySelector('#fV').addEventListener('submit', e => {
+    e.preventDefault(); const f = new FormData(e.target); const v = { id: uid(), label: f.get('label'), date: f.get('date') };
+    FIELDS.forEach(([k]) => { const x = f.get(k); v[k] = x === '' ? null : +x; });
+    if (!['weight', 'height', 'waist', 'sbp', 'fpg'].some(k => v[k] != null)) { const er = dlg.querySelector('#vErr'); er.hidden = false; er.textContent = 'Enter at least weight, waist, blood pressure or fasting glucose to save a visit.'; return; }
+    P.visits.push(v); save(); dlg.close(); toast('Visit saved'); route();
+  });
+}
+function tPlates(P, s, el) {
+  const sel = window.__day && window.__day[P.id] || (P.plates.length ? [...P.plates].sort((a, b) => b.date.localeCompare(a.date))[0].date : iso(today()));
+  const list = P.plates.filter(p => p.date === sel).sort((a, b) => a.time.localeCompare(b.time));
+  const cards = list.map(p => `<article class="plate"><div class="top"><b>${esc(p.meal)}</b><span class="muted">${esc(p.time)}</span></div><div class="pic">${p.photo ? `<img src="${p.photo}" alt="Photo of ${esc(p.meal.toLowerCase())}">` : plateSVG(p.tags, 120, p.meal + ' plate')}</div>
+  <div class="tags">${TAGS.filter(t => p.tags[t[0]]).map(t => `<span class="chip ok">${t[1]}</span>`).join('')}${FLAGS.filter(t => p.flags[t[0]]).map(t => `<span class="chip warn">${t[1]}</span>`).join('')}</div>
+  <div class="sc"><span class="muted">${p.reviewed ? 'Plate score' : 'Waiting for review'}</span><b>${p.reviewed ? p.score + ' of 10' : ''}</b></div>${p.comment ? `<div style="font-size:14px">${esc(p.comment)}</div>` : ''}
+  ${can.review() ? `<button class="btn ghost" data-rev="${p.id}">${p.reviewed ? 'Edit review' : 'Review plate'}</button>` : ''}</article>`).join('');
+  el.innerHTML = `<div class="daybar"><label class="muted" for="day">Day</label><input type="date" id="day" value="${sel}" min="${P.start}" max="${iso(today())}"><span class="muted" style="font-size:14px">Week ${Math.max(1, weekOf(P, sel))}</span><span style="flex:1"></span>${can.addPlate() ? '<button class="btn" id="addPl">Upload plate</button>' : ''}</div>
+  ${list.length ? `<div class="plates">${cards}</div>` : `<div class="empty">No plates for this day.${can.addPlate() ? ' Upload a photo of each meal to start the log.' : ''}</div>`}`;
+  el.querySelector('#day').addEventListener('change', e => { window.__day = window.__day || {}; window.__day[P.id] = e.target.value; route(); });
+  const a = el.querySelector('#addPl'); if (a) a.onclick = () => openPlate(P, null, sel);
+  el.querySelectorAll('[data-rev]').forEach(b => b.onclick = () => openPlate(P, P.plates.find(x => x.id === b.dataset.rev), sel));
+}
+function resizeImage(file) { return new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => { const im = new Image(); im.onload = () => { const m = 720, k = Math.min(1, m / Math.max(im.width, im.height)); const cv = document.createElement('canvas'); cv.width = Math.round(im.width * k); cv.height = Math.round(im.height * k); cv.getContext('2d').drawImage(im, 0, 0, cv.width, cv.height); res(cv.toDataURL('image/jpeg', 0.7)); }; im.onerror = rej; im.src = fr.result; }; fr.onerror = rej; fr.readAsDataURL(file); }); }
+function openPlate(P, p, day) {
+  const isNew = !p; const rv = can.review();
+  const d = p || { id: uid(), date: day, time: new Date().toTimeString().slice(0, 5), meal: 'Lunch', photo: null, tags: { veg: false, protein: false, grain: false, fruit: false, dairy: false }, flags: { oil: false, sweet: false, upf: false }, score: 0, comment: '', reviewed: false };
+  const tags = { ...d.tags }, flags = { ...d.flags }; let photo = d.photo; let touched = d.reviewed;
+  dlg.innerHTML = `<form class="dlg" id="fPl"><h2>${isNew ? 'Upload plate' : 'Review plate'}</h2>
+  <div class="form three"><label>Meal<select name="meal">${['Breakfast', 'Lunch', 'Snack', 'Dinner'].map(m => `<option ${m === d.meal ? 'selected' : ''}>${m}</option>`).join('')}</select></label><label>Date<input type="date" name="date" value="${d.date}" required></label><label>Time<input type="time" name="time" value="${d.time}" required></label>
+  <label class="full">Photo<input type="file" name="photo" accept="image/*" capture="environment"></label></div>
+  <fieldset><legend>What is on the plate</legend><div class="platepick"><div id="pv">${plateSVG(tags, 150, 'Plate preview')}</div><div class="toggles">${TAGS.map(([k, l]) => `<label><input type="checkbox" data-tag="${k}" ${tags[k] ? 'checked' : ''}> ${l}</label>`).join('')}</div></div></fieldset>
+  <fieldset style="margin-top:12px"><legend>Flags</legend><div class="toggles">${FLAGS.map(([k, l]) => `<label><input type="checkbox" data-flag="${k}" ${flags[k] ? 'checked' : ''}> ${l}</label>`).join('')}</div></fieldset>
+  ${rv ? `<div class="form"><label>Plate score, 0 to 10<input type="range" name="score" min="0" max="10" step="1" value="${d.reviewed ? d.score : suggest(tags, flags)}" id="sc"></label><label>Score<output id="sco" style="font-size:22px;font-weight:700;color:var(--leaf-deep)">${d.reviewed ? d.score : suggest(tags, flags)}</output><span class="muted" style="font-weight:400" id="sug">Suggested from the tags: ${suggest(tags, flags)}. You decide.</span></label><label class="full">Comment for the patient<textarea name="comment" maxlength="300">${esc(d.comment)}</textarea></label></div>` : '<p class="muted" style="font-size:14px">The nutritionist reviews and scores each plate.</p>'}
+  <div class="actions">${!isNew && rv ? '<button type="button" class="btn danger" id="del">Delete plate</button>' : ''}<button type="button" class="btn ghost" id="cancel">Cancel</button><button class="btn" type="submit">${isNew ? 'Upload plate' : 'Save review'}</button></div></form>`;
+  dlg.showModal(); dlg.querySelector('#cancel').onclick = () => dlg.close();
+  const refresh = () => { dlg.querySelector('#pv').innerHTML = plateSVG(tags, 150, 'Plate preview'); const sg = dlg.querySelector('#sug'); if (sg) sg.textContent = 'Suggested from the tags: ' + suggest(tags, flags) + '. You decide.'; const s2 = dlg.querySelector('#sc'); if (s2 && !touched) { s2.value = suggest(tags, flags); dlg.querySelector('#sco').textContent = s2.value; } };
+  dlg.querySelectorAll('[data-tag]').forEach(c => c.onchange = () => { tags[c.dataset.tag] = c.checked; refresh(); });
+  dlg.querySelectorAll('[data-flag]').forEach(c => c.onchange = () => { flags[c.dataset.flag] = c.checked; refresh(); });
+  const sc = dlg.querySelector('#sc'); if (sc) sc.oninput = () => { touched = true; dlg.querySelector('#sco').textContent = sc.value; };
+  dlg.querySelector('[name=photo]').onchange = async e => { const f = e.target.files[0]; if (!f) return; try { photo = await resizeImage(f); toast('Photo added'); } catch (er) { toast('That file could not be read as an image. Try a JPEG or PNG.'); } };
+  const del = dlg.querySelector('#del'); if (del) del.onclick = () => { P.plates = P.plates.filter(x => x.id !== d.id); save(); dlg.close(); toast('Plate deleted'); route(); };
+  dlg.querySelector('#fPl').addEventListener('submit', e => {
+    e.preventDefault(); const f = new FormData(e.target);
+    Object.assign(d, { meal: f.get('meal'), date: f.get('date'), time: f.get('time'), tags, flags, photo });
+    if (rv) { d.score = +f.get('score'); d.comment = (f.get('comment') || '').trim(); d.reviewed = true; }
+    if (isNew) P.plates.push(d);
+    window.__day = window.__day || {}; window.__day[P.id] = d.date;
+    save(); dlg.close(); toast(isNew ? 'Plate uploaded' : 'Review saved'); route();
+  });
+}
+function tAudit(P, s, el) {
+  const weeks = Math.max(1, Math.min(3, Math.ceil(elapsedDays(P) / 7)));
+  let html = '';
+  for (let w = weeks; w >= 1; w--) {
+    const days = [...Array(7)].map((_, i) => iso(addDays(P.start, (w - 1) * 7 + i))).filter(d => new Date(d) <= today());
+    const rows = days.map(d => { const ps = P.plates.filter(p => p.date === d && p.reviewed); const avg = ps.length ? ps.reduce((a, p) => a + p.score, 0) / ps.length : null; const dn = new Date(d).toLocaleDateString('en-IN', { weekday: 'short' }); return `<div class="drow"><span>${dn}</span><div class="bar ${avg != null && avg < 6 ? 't' : ''}"><i style="width:${avg == null ? 0 : avg * 10}%"></i></div><span class="num">${avg == null ? '' : avg.toFixed(1)}</span></div>`; }).join('');
+    const wp = P.plates.filter(p => days.includes(p.date)); const rvd = wp.filter(p => p.reviewed);
+    const avg = rvd.length ? (rvd.reduce((a, p) => a + p.score, 0) / rvd.length).toFixed(1) : null;
+    const logged = new Set(wp.map(p => p.date)).size; const fl = FLAGS.map(([k, l]) => [l, wp.filter(p => p.flags[k]).length]).filter(x => x[1]);
+    const r = P.reviews[w] || { text: '', goals: '' };
+    html += `<section class="week"><div class="panel"><h2>Week ${w}</h2><div class="days">${rows || '<p class="muted">No days yet.</p>'}</div><p style="margin:12px 0 0"><b>Week score ${avg == null ? 'not yet' : avg + ' of 10'}</b>. Logged ${logged} of ${days.length} days.${fl.length ? ' Flags: ' + fl.map(x => x[0].toLowerCase() + ' ' + x[1]).join(', ') + '.' : ''}</p></div>
+    <div class="panel"><h3>Nutritionist review</h3>${can.review() ? `<form data-w="${w}" class="form" style="grid-template-columns:1fr;margin:0"><label>Review<textarea name="text" maxlength="500">${esc(r.text)}</textarea></label><label>Goals for next week<textarea name="goals" maxlength="300">${esc(r.goals)}</textarea></label><label class="check"><input type="checkbox" name="att" ${P.checkins[w] ? 'checked' : ''}> Attended this week's check-in session</label><div class="actions"><button class="btn" type="submit">Save review</button></div></form>` : `<p>${r.text ? esc(r.text) : '<span class="muted">No review yet.</span>'}</p>${r.goals ? `<p><b>Goals:</b> ${esc(r.goals)}</p>` : ''}<p class="muted">${P.checkins[w] ? 'Attended the check-in session.' : 'Check-in not recorded.'}</p>`}</div></section>`;
+  }
+  el.innerHTML = html;
+  el.querySelectorAll('form[data-w]').forEach(f => f.addEventListener('submit', e => { e.preventDefault(); const w = f.dataset.w, d = new FormData(f); P.reviews[w] = { text: d.get('text').trim(), goals: d.get('goals').trim() }; P.checkins[w] = !!d.get('att'); save(); toast('Review saved'); route(); }));
+}
+function tReport(P, s, el) {
+  if (!s.base) { el.innerHTML = '<div class="empty">The report needs at least a baseline visit.</div>'; return; }
+  const b = s.base, l = s.last; const two = s.vs.length > 1;
+  const lowerBetter = ['weight', 'waist', 'sbp', 'dbp', 'fpg', 'ppg', 'hba1c', 'tc', 'ldl', 'tg', 'ast', 'alt', 'bmi'];
+  const rows = [['weight', 'Weight', 'kg'], ['bmi', 'BMI', ''], ['waist', 'Waist', 'cm'], ['sbp', 'Systolic BP', 'mmHg'], ['dbp', 'Diastolic BP', 'mmHg'], ['fpg', 'Fasting glucose', 'mg/dL'], ['ppg', 'Post-meal glucose', 'mg/dL'], ['hba1c', 'HbA1c', '%'], ['tg', 'Triglycerides', 'mg/dL'], ['hdl', 'HDL', 'mg/dL'], ['alt', 'ALT', 'U/L']].map(([k, lab, u]) => {
+    const x0 = k === 'bmi' ? bmi(b) : num(b[k]), x1 = k === 'bmi' ? bmi(l) : num(l[k]); if (x0 == null && x1 == null) return '';
+    let ch = ''; if (two && x0 != null && x1 != null) { const dlt = +(x1 - x0).toFixed(1); const good = lowerBetter.includes(k) ? dlt < 0 : dlt > 0; ch = dlt === 0 ? 'No change' : `<span class="${good ? 'better' : 'worse'}">${dlt > 0 ? '+' : ''}${dlt}</span>`; }
+    return `<tr><td>${lab}${u ? ' <span class="muted">' + u + '</span>' : ''}</td><td class="num">${x0 ?? ''}</td>${two ? `<td class="num">${x1 ?? ''}</td><td class="num">${ch}</td>` : ''}</tr>`;
+  }).join('');
+  const days = elapsedDays(P), logged = new Set(P.plates.map(p => p.date)).size; const rvd = P.plates.filter(p => p.reviewed);
+  const avg = rvd.length ? (rvd.reduce((a, p) => a + p.score, 0) / rvd.length).toFixed(1) : null; const att = Object.values(P.checkins).filter(Boolean).length;
+  const lastReview = Object.keys(P.reviews).sort().reverse().map(k => P.reviews[k]).find(r => r.text);
+  const steps = ['Continue to the 12-week programme', 'Condition track with a dietitian', 'Maintenance', 'Back to the referring doctor'];
+  el.innerHTML = `<div class="toolbar noprint"><button class="btn" id="print">Print or save as PDF</button><span class="muted" style="font-size:14px">Opens your browser's print dialog. Choose "Save as PDF" to share it.</span></div>
+  <article class="report"><div class="rhead"><div><div class="ml">അന്നം</div><b>Progress report</b><div class="muted" style="font-size:14px">${esc(two ? b.label + ' to ' + l.label : 'Baseline')}, ${esc(b.date)}${two ? ' to ' + esc(l.date) : ''}</div></div><div style="text-align:right;font-size:14px"><b>${esc(P.name)}</b><br>${esc(P.age)} ${P.sex === 'F' ? 'female' : 'male'}<br>Referred by ${esc(P.referrer)}<br>${P.sample ? '<span style="color:var(--chili);font-weight:600">Sample data</span>' : ''}</div></div>
+  <div class="grid3" style="margin-bottom:6px"><div><div class="muted" style="font-size:13px">Health score</div><b style="font-size:24px">${s.sb && s.sb.score != null ? s.sb.score : 'None'}${two ? ' to ' + (s.sc.score ?? 'None') : ''}</b></div><div><div class="muted" style="font-size:13px">Diabetes risk (IDRS)</div><b style="font-size:18px">${s.idrs ? s.idrs.cat + ', ' + s.idrs.s : 'Needs data'}</b></div><div><div class="muted" style="font-size:13px">Status</div><span class="chip ${statusCls(s.status)}">${s.status}</span></div></div>
+  <h3>Measures</h3><div class="tablewrap"><table><thead><tr><th>Measure</th><th class="num">${esc(b.label)}</th>${two ? `<th class="num">${esc(l.label)}</th><th class="num">Change</th>` : ''}</tr></thead><tbody>${rows}</tbody></table></div>
+  <p class="muted" style="font-size:13px">HbA1c reflects about three months of glucose. A change is expected at 12 weeks, not at week 3.</p>
+  <h3>Adherence</h3><p>Logged plates on ${logged} of ${days} days. Average plate score ${avg ?? 'not yet available'}${avg ? ' of 10' : ''}. Attended ${att} check-in session${att === 1 ? '' : 's'}.</p>
+  ${lastReview ? `<h3>Nutritionist summary</h3><p>${esc(lastReview.text)}${lastReview.goals ? ' Goals: ' + esc(lastReview.goals) : ''}</p>` : ''}
+  <h3>Red flags</h3><p>${s.flags.length ? esc(s.flags.join('. ')) + '.' : 'None recorded.'}</p>
+  <h3>Next step</h3>${can.approve() ? `<select id="next" class="noprint" style="border:1px solid var(--line);border-radius:8px;padding:8px">${['', ...steps].map(o => `<option ${o === P.nextStep ? 'selected' : ''} value="${esc(o)}">${o || 'Choose the next step'}</option>`).join('')}</select>` : ''}<p>${P.nextStep ? esc(P.nextStep) : '<span class="muted">To be decided by the doctor.</span>'}</p>
+  <div class="signbox">${P.approval ? `<b>Approved by ${esc(P.approval.name)}</b> on ${esc(P.approval.date)}.` : can.approve() ? `<form id="ap" class="form" style="margin:0"><label>Your name<input name="name" required maxlength="80"></label><label>Date<input type="date" name="date" value="${iso(today())}" required></label><div class="actions full"><button class="btn" type="submit">Approve report</button></div></form>` : '<span class="muted">Waiting for the doctor to review and approve.</span>'}</div>
+  <p class="disclaimer">Annam supports the care team and does not diagnose. The doctor decides on medication and treatment. The score weights are a draft set by the clinical lead. Cardiovascular risk is shown only once a chart validated for South Asia is chosen.</p></article>`;
+  el.querySelector('#print').onclick = () => window.print();
+  const nx = el.querySelector('#next'); if (nx) nx.onchange = () => { P.nextStep = nx.value; save(); toast('Next step saved'); route(); };
+  const ap = el.querySelector('#ap'); if (ap) ap.addEventListener('submit', e => { e.preventDefault(); const f = new FormData(ap); P.approval = { name: f.get('name').trim(), date: f.get('date') }; save(); toast('Report approved'); route(); });
+}
+
+/* ---------------- about ---------------- */
+function renderAbout() {
+  app.innerHTML = `<div class="about"><h1>About <span class="ml">അന്നം</span></h1><p class="lede">Annam keeps one profile per patient: the plates they eat, the measures taken at the clinic, a health score, a risk profile, and a report for the doctor who referred them.</p>
+  <div class="panel"><h2>What this prototype is</h2><ul><li>A working model of the workflow, for showing to clinics, labs and partners.</li><li>Everything is stored in this browser only. Nothing is sent to a server.</li><li>The patients are invented samples. Do not enter real patient information here.</li><li>Switch between Nutritionist, Doctor and Patient at the top to see what each person can do.</li></ul></div>
+  <div class="panel" style="margin-top:16px"><h2>What production needs</h2><ul><li>Secure sign-in for each role, with access limited to each person's patients.</li><li>A database and photo storage hosted in India where possible, encrypted, with backups and audit logs.</li><li>Consent records, retention and deletion rules under the Digital Personal Data Protection Act, 2023.</li><li>Regulatory advice on whether the score counts as medical software under the Medical Devices Rules, 2017.</li><li>Score weights and risk tools signed off by the clinical lead.</li></ul></div>
+  <div class="panel" style="margin-top:16px"><h2>Your data in this browser</h2><p class="muted">Export a copy before clearing your browser, or to move to another device.</p><div class="actions" style="justify-content:flex-start"><button class="btn secondary" id="exp">Export data</button><label class="btn ghost" style="cursor:pointer">Import data<input type="file" id="imp" accept="application/json" hidden></label><button class="btn danger" id="rst">Reset to sample data</button></div></div></div>`;
+  document.getElementById('exp').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' })); a.download = 'annam-data-' + iso(today()) + '.json'; a.click(); };
+  document.getElementById('imp').onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { try { const d = JSON.parse(r.result); if (!Array.isArray(d.patients)) throw 0; S = d; save(); toast('Data imported'); setRole(S.role || 'nutritionist'); } catch (er) { toast('That file is not an Annam export.'); } }; r.readAsText(f); };
+  document.getElementById('rst').onclick = () => { if (confirm('Replace everything in this browser with the sample data?')) { S = seed(); save(); toast('Sample data restored'); setRole('nutritionist'); location.hash = '#/'; } };
+}
+
+/* ---------------- start ---------------- */
+S = load(); save();
+document.querySelectorAll('.role button').forEach(b => b.setAttribute('aria-pressed', b.dataset.role === S.role));
+route();
+</script>
+</body>
+</html>

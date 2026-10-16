@@ -1,15 +1,39 @@
-// Sessions: a random token in an httpOnly cookie, stored only as a SHA-256 hash in the database.
+// Sessions: a signed token in an httpOnly cookie. The signature lets any server instance check it,
+// so a sign-in holds even when requests land on different servers. The database keeps a row per session
+// (by SHA-256 of the token) for the audit trail and for sign-out.
 import 'server-only';
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { getDb, type Actor, type Db } from '../db';
-import { can, LOCK_MINUTES, MAX_FAILED_SIGN_INS, SESSION_HOURS, type Permission, type Role } from './roles';
+import { ACCOUNTS, can, LOCK_MINUTES, MAX_FAILED_SIGN_INS, SESSION_HOURS, type Permission, type Role } from './roles';
 import { verifyPassword } from './password';
 import { verifyTotp } from './totp';
 
 export const COOKIE = 'annam_session';
 const sha = (t: string) => createHash('sha256').update(t).digest('hex');
+
+/** Signing key: ANNAM_SESSION_SECRET, or one derived from the server's other secrets (the same on every instance). */
+function signingKey(): string {
+  if (process.env.ANNAM_SESSION_SECRET) return process.env.ANNAM_SESSION_SECRET;
+  const parts = [process.env.CRON_SECRET, process.env.ANNAM_ADMIN_TOTP_SECRET, ...ACCOUNTS.map(a => process.env[a.env])];
+  if (process.env.NODE_ENV === 'production' && !parts.some(Boolean)) throw new Error('No session signing secret configured');
+  return sha('annam-session|' + parts.map(p => p ?? '').join('|'));
+}
+const sign = (body: string) => createHmac('sha256', signingKey()).update(body).digest('base64url');
+
+interface TokenBody { u: string; n: string; exp: number; j: string }
+function makeToken(b: TokenBody) { const body = Buffer.from(JSON.stringify(b)).toString('base64url'); return `${body}.${sign(body)}`; }
+function readToken(t: string): TokenBody | null {
+  const [body, sig] = t.split('.');
+  if (!body || !sig) return null;
+  const want = Buffer.from(sign(body)), got = Buffer.from(sig);
+  if (want.length !== got.length || !timingSafeEqual(want, got)) return null;
+  try {
+    const b = JSON.parse(Buffer.from(body, 'base64url').toString()) as TokenBody;
+    return typeof b.u === 'string' && typeof b.n === 'string' && b.exp > Date.now() ? b : null;
+  } catch { return null; }
+}
 
 export interface Session { id: string; username: string; role: Role; displayName: string; staffName: string; expiresAt: string }
 export const actorOf = (s: Session): Actor => ({ account: s.username, staff: s.staffName });
@@ -31,7 +55,7 @@ export async function signIn(username: string, password: string, staffName: stri
     await audit(db, a.username, null, 'sign_in_blocked');
     return { ok: false, error: `This account is locked after ${MAX_FAILED_SIGN_INS} failed attempts. Try again in ${LOCK_MINUTES} minutes.` };
   }
-  let ok = verifyPassword(password, a.password_hash);
+  let ok = verifyPassword(password.trim(), a.password_hash);
   if (ok && a.role === 'admin') {
     const secret = process.env.ANNAM_ADMIN_TOTP_SECRET;
     if (secret) ok = !!code && verifyTotp(secret, code);
@@ -48,8 +72,8 @@ export async function signIn(username: string, password: string, staffName: stri
     return a.role === 'admin' && process.env.ANNAM_ADMIN_TOTP_SECRET ? { ok: false, error: 'That username, password or code does not match. Check them and try again.' } : generic;
   }
   await db.query('update accounts set failed_attempts = 0, locked_until = null where username = $1', [a.username]);
-  const token = randomBytes(32).toString('base64url');
   const hours = SESSION_HOURS[a.role];
+  const token = makeToken({ u: a.username, n: staffName, exp: Date.now() + hours * 3_600_000, j: randomBytes(12).toString('base64url') });
   await db.query(`insert into sessions (id, username, staff_name, expires_at) values ($1, $2, $3, now() + make_interval(hours => $4::int))`, [sha(token), a.username, staffName, hours]);
   await audit(db, a.username, staffName, 'sign_in');
   (await cookies()).set(COOKIE, token, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', path: '/', maxAge: hours * 3600 });
@@ -58,13 +82,15 @@ export async function signIn(username: string, password: string, staffName: stri
 
 export async function getSession(): Promise<Session | null> {
   const token = (await cookies()).get(COOKIE)?.value;
-  if (!token || token.length > 100) return null;
+  if (!token || token.length > 1000) return null;
+  const b = readToken(token);
+  const account = b && ACCOUNTS.find(a => a.username === b.u);
+  if (!b || !account) return null;
+  // Signed out on this database? (A row missing here only means the sign-in happened on another instance.)
   const db = await getDb();
-  const rows = await db.query<{ id: string; username: string; role: Role; display_name: string; staff_name: string; expires_at: string }>(
-    `select s.id, s.username, a.role, a.display_name, s.staff_name, s.expires_at from sessions s join accounts a using (username)
-      where s.id = $1 and s.revoked_at is null and s.expires_at > now()`, [sha(token)]);
-  const r = rows[0];
-  return r ? { id: r.id, username: r.username, role: r.role, displayName: r.display_name, staffName: r.staff_name, expiresAt: r.expires_at } : null;
+  const [row] = await db.query<{ revoked_at: string | null }>('select revoked_at from sessions where id = $1', [sha(token)]);
+  if (row?.revoked_at) return null;
+  return { id: sha(token), username: account.username, role: account.role, displayName: account.displayName, staffName: b.n, expiresAt: new Date(b.exp).toISOString() };
 }
 
 /** For pages and actions: the session, or a redirect to sign-in with a note that the session ended. */
@@ -85,8 +111,13 @@ export async function signOut() {
   const jar = await cookies(); const token = jar.get(COOKIE)?.value;
   if (token) {
     const db = await getDb();
-    const r = await db.query<{ username: string; staff_name: string }>('update sessions set revoked_at = now() where id = $1 returning username, staff_name', [sha(token)]);
-    if (r[0]) await audit(db, r[0].username, r[0].staff_name, 'sign_out');
+    const b = readToken(token);
+    await db.query('update sessions set revoked_at = now() where id = $1', [sha(token)]);
+    if (b) {
+      // Record the sign-out even when the sign-in happened on another instance, so the revocation holds here.
+      await db.query(`insert into sessions (id, username, staff_name, expires_at, revoked_at) values ($1, $2, $3, $4, now()) on conflict (id) do nothing`, [sha(token), b.u, b.n, new Date(b.exp).toISOString()]);
+      await audit(db, b.u, b.n, 'sign_out');
+    }
   }
   jar.delete(COOKIE);
 }

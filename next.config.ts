@@ -11,6 +11,10 @@ const securityHeaders = [
 const config: NextConfig = {
   serverExternalPackages: ['@electric-sql/pglite', 'pg'],
   poweredByHeader: false,
+  // The embedded database (demo and development) loads these at run time.
+  outputFileTracingIncludes: {
+    '/**': ['./node_modules/.pnpm/@electric-sql+pglite@*/node_modules/@electric-sql/pglite/dist/pglite.{wasm,data}']
+  },
   experimental: { serverActions: { bodySizeLimit: '2mb' } },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }];

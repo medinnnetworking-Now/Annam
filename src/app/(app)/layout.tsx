@@ -22,7 +22,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </nav>
         <div className="who" style={{ width: '100%', textAlign: 'right' }}>{s.displayName} · {s.staffName}</div>
       </header>
-      <main id="main" tabIndex={-1}>{children}</main>
+      <main id="main" tabIndex={-1}>
+        {process.env.ANNAM_DEMO === 'true' && <p className="notice"><b>Demo.</b> Sample patients only. Data resets when the server restarts. Never enter real patient information here.</p>}
+        {children}
+      </main>
     </>
   );
 }

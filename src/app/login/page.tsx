@@ -19,6 +19,7 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
       </div>
       <div className="panel">
         <h1 style={{ fontSize: 26 }}>Sign in</h1>
+        {process.env.ANNAM_DEMO === 'true' && <p className="notice"><b>Demo.</b> Sample patients only; data resets. Never enter real patient information.</p>}
         {sp.ended && <p className="notice" role="status">Your session ended. Sign in again to carry on.</p>}
         {sp.signed_out && <p className="notice" role="status">You are signed out.</p>}
         <LoginForm />

@@ -13,7 +13,8 @@
     "test:coverage": "vitest run --coverage",
     "e2e": "playwright test",
     "credentials": "node scripts/credentials.mjs",
-    "retention": "node scripts/retention.mjs"
+    "retention": "node scripts/retention.mjs",
+    "ui-tour": "node scripts/ui-tour.mjs"
   },
   "packageManager": "pnpm@10.28.0",
   "dependencies": {

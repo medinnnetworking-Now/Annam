@@ -87,7 +87,14 @@ export async function migrate(db: Db) {
 }
 
 /** Open a database without the start-up seeding. Used by tests and scripts. */
-export async function openDb(target = process.env.DATABASE_URL ?? process.env.ANNAM_PGLITE_DIR ?? '.data/pglite'): Promise<Db> {
+/** Where the embedded database lives. Serverless hosts (Vercel) only allow writes under /tmp. */
+export function defaultTarget(): string {
+  if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
+  if (process.env.ANNAM_PGLITE_DIR) return process.env.ANNAM_PGLITE_DIR;
+  return process.env.VERCEL ? '/tmp/annam-db' : '.data/pglite';
+}
+
+export async function openDb(target = defaultTarget()): Promise<Db> {
   const db = /^postgres(ql)?:\/\//.test(target) ? await postgres(target) : await pglite(target);
   await migrate(db);
   return db;

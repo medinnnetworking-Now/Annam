@@ -22,12 +22,21 @@ function signingKey(): string {
 }
 const sign = (body: string) => createHmac('sha256', signingKey()).update(body).digest('base64url');
 
+/** True when the server has the settings sign-in needs. Used to show a setup message instead of failing. */
+export function signInConfigured(): { ok: boolean; missing: string[] } {
+  const missing = ACCOUNTS.filter(a => !process.env[a.env]?.startsWith('scrypt$')).map(a => a.env);
+  if (!process.env.ANNAM_ADMIN_TOTP_SECRET) missing.push('ANNAM_ADMIN_TOTP_SECRET');
+  return { ok: process.env.NODE_ENV !== 'production' || missing.length === 0, missing };
+}
+
 interface TokenBody { u: string; n: string; exp: number; j: string }
 function makeToken(b: TokenBody) { const body = Buffer.from(JSON.stringify(b)).toString('base64url'); return `${body}.${sign(body)}`; }
 function readToken(t: string): TokenBody | null {
   const [body, sig] = t.split('.');
   if (!body || !sig) return null;
-  const want = Buffer.from(sign(body)), got = Buffer.from(sig);
+  let want: Buffer;
+  try { want = Buffer.from(sign(body)); } catch { return null; } // no signing key yet: treat as signed out
+  const got = Buffer.from(sig);
   if (want.length !== got.length || !timingSafeEqual(want, got)) return null;
   try {
     const b = JSON.parse(Buffer.from(body, 'base64url').toString()) as TokenBody;

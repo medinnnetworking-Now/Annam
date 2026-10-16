@@ -14,7 +14,12 @@ const schema = z.object({
 export async function signInAction(_: { error: string } | null, f: FormData): Promise<{ error: string }> {
   const p = schema.safeParse({ username: f.get('username'), password: f.get('password'), staff: f.get('staff'), code: f.get('code') || undefined });
   if (!p.success) return { error: p.error.issues[0]!.message };
-  const r = await signIn(p.data.username, p.data.password, p.data.staff, p.data.code);
+  let r;
+  try { r = await signIn(p.data.username, p.data.password, p.data.staff, p.data.code); }
+  catch (e) {
+    console.error('annam sign-in failed', e instanceof Error ? e.name : 'unknown');
+    return { error: 'The server could not check your sign-in just now. Try again in a minute; if it keeps happening, tell the admin (details at /api/health).' };
+  }
   if (!r.ok) return { error: r.error };
   redirect(HOME[r.role]);
 }

@@ -2,6 +2,7 @@
 // so a sign-in holds even when requests land on different servers. The database keeps a row per session
 // (by SHA-256 of the token) for the audit trail and for sign-out.
 import 'server-only';
+import '../env';
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';

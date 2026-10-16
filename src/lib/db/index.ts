@@ -1,6 +1,7 @@
 // Database access. Postgres in production (DATABASE_URL, Supabase Mumbai), embedded PGlite in
 // development and tests. Every write goes through tx(), which names the actor for the audit log.
 import 'server-only';
+import '../env';
 import { MIGRATIONS } from './migrations';
 
 export interface Q {

@@ -21,6 +21,8 @@ export default defineConfig({
     timeout: 120_000,
     env: {
       ANNAM_PGLITE_DIR: '.data/e2e',
+      // Set ANNAM_E2E_DATABASE_URL to run against a real, empty Postgres database instead.
+      ...(process.env.ANNAM_E2E_DATABASE_URL ? { POSTGRES_URL: process.env.ANNAM_E2E_DATABASE_URL } : {}),
       ANNAM_SEED_SAMPLES: 'true',
       ANNAM_NUTRITIONIST_PASSWORD_HASH: hashPassword(E2E.nutritionist),
       ANNAM_CLINIC_PASSWORD_HASH: hashPassword(E2E.rmclinic),

@@ -37,7 +37,8 @@ const JPEG = Buffer.concat([
 ]);
 
 let db: Db;
-beforeAll(async () => { db = await openDb('memory://'); });
+// ANNAM_TEST_DATABASE_URL runs these tests against a real Postgres server (an empty database) instead of PGlite.
+beforeAll(async () => { db = await openDb(process.env.ANNAM_TEST_DATABASE_URL ?? 'memory://'); });
 afterAll(async () => { await db.close(); });
 
 describe('roles', () => {

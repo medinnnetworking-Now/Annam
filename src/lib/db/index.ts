@@ -50,6 +50,18 @@ async function pglite(dataDir: string): Promise<Db> {
   };
 }
 
+const isLocal = (url: string) => /@(localhost|127\.0\.0\.1)[:/]/.test(url);
+
+/**
+ * Drop SSL options from the connection string (Supabase and Neon add sslmode=require; the pg driver reads that as
+ * full certificate verification, which fails on their pooled hosts). TLS is still on: see the ssl setting below.
+ */
+export function cleanUrl(url: string): string {
+  const u = new URL(url);
+  for (const k of ['sslmode', 'sslcert', 'sslkey', 'sslrootcert', 'supa', 'pgbouncer']) u.searchParams.delete(k);
+  return u.toString();
+}
+
 async function postgres(url: string): Promise<Db> {
   const pgmod = await import('pg');
   const { Pool, types } = pgmod.default ?? pgmod;
@@ -57,7 +69,7 @@ async function postgres(url: string): Promise<Db> {
   for (const o of TIME_OIDS) types.setTypeParser(o, v => v);
   for (const o of TS_OIDS) types.setTypeParser(o, v => toIso(v));
   types.setTypeParser(20, v => Number(v)); // count(*) fits in a JS number
-  const pool = new Pool({ connectionString: url, max: 5, ssl: url.includes('localhost') ? undefined : { rejectUnauthorized: false } });
+  const pool = new Pool({ connectionString: cleanUrl(url), max: 5, ssl: isLocal(url) ? undefined : { rejectUnauthorized: false } });
   const q: Q = { query: async <T,>(sql: string, params?: unknown[]) => (await pool.query(sql, params)).rows as T[], exec: async sql => { await pool.query(sql); } };
   return {
     ...q,

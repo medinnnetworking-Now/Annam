@@ -90,7 +90,9 @@ export async function migrate(db: Db) {
 /** Open a database without the start-up seeding. Used by tests and scripts. */
 /** Where the embedded database lives. Serverless hosts (Vercel) only allow writes under /tmp. */
 export function defaultTarget(): string {
-  if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
+  // DATABASE_URL, or POSTGRES_URL as set by Vercel's one-click Neon and Supabase integrations.
+  const url = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+  if (url) return url;
   if (process.env.ANNAM_PGLITE_DIR) return process.env.ANNAM_PGLITE_DIR;
   return process.env.VERCEL ? '/tmp/annam-db' : '.data/pglite';
 }

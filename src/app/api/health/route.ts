@@ -25,7 +25,7 @@ export async function GET() {
       ...Object.fromEntries(ACCOUNTS.map(a => [a.env, process.env[a.env]?.startsWith('scrypt$') ? 'set' : process.env[a.env] ? 'set but not a valid hash' : 'missing'])),
       ANNAM_ADMIN_TOTP_SECRET: has('ANNAM_ADMIN_TOTP_SECRET'),
       CRON_SECRET: has('CRON_SECRET'),
-      DATABASE_URL: has('DATABASE_URL'),
+      DATABASE_URL: process.env.DATABASE_URL ? 'set' : process.env.POSTGRES_URL ? 'set (POSTGRES_URL)' : 'missing',
       ANNAM_DEMO: process.env.ANNAM_DEMO ?? 'missing',
       ANNAM_SEED_SAMPLES: process.env.ANNAM_SEED_SAMPLES ?? 'missing'
     },

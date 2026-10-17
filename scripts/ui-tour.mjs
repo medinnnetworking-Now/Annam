@@ -10,6 +10,10 @@ const OUT = process.argv[2] ?? 'annam-ui-workflow.pdf';
 // ANNAM_TOUR_EDITION=clinic makes the RM Clinic guide: clinic screens only, a login page and a daily checklist.
 // The login page reads ANNAM_TOUR_LOGIN_URL and ANNAM_TOUR_LOGIN_PASSWORD, which are never stored in the repository.
 const CLINIC = process.env.ANNAM_TOUR_EDITION === 'clinic';
+// ANNAM_TOUR_EDITION=manual makes the full user manual: every role, a getting-started page and quick-reference pages.
+const MANUAL = process.env.ANNAM_TOUR_EDITION === 'manual';
+// ANNAM_TOUR_FONTS_CSS: a stylesheet with the fonts embedded, so the PDF never depends on a network font.
+const FONTS_CSS = process.env.ANNAM_TOUR_FONTS_CSS ? (await import('node:fs')).readFileSync(process.env.ANNAM_TOUR_FONTS_CSS, 'utf8') : null;
 const LOGIN_URL = process.env.ANNAM_TOUR_LOGIN_URL ?? '';
 const LOGIN_PASSWORD = process.env.ANNAM_TOUR_LOGIN_PASSWORD ?? '';
 const BASE = 'http://localhost:3200';
@@ -275,6 +279,53 @@ if (CLINIC) {
   if (signIn) signIn.lines = ['Your team shares one login: rmclinic. The password is on page 2.', 'Every time you sign in, type your own name. It goes on everything you record, so the record shows who did what.', 'Five wrong passwords lock the login for 15 minutes. You are signed out automatically after 10 hours.'];
 }
 
+// Quick-reference pages for the manual edition.
+const QUICK_REFERENCE = `<section class="page">
+  <h2>Quick reference: RM Clinic staff</h2>
+  <table>
+    <tr><th style="width:28%">When</th><th>What to do</th></tr>
+    <tr><td><b>Walk-in</b></td><td><b>Patients → Add patient.</b> Required: name, sex, age (or date of birth), consent. Everything else is optional. Ask the 5 safety questions; read the consent text; tick consent.</td></tr>
+    <tr><td><b>Baseline</b></td><td><b>Measures → Record baseline.</b> Enter only what was measured; one value is enough. Lipids and liver/kidney labs are under “More lab values”. Ask the lifestyle questions; each answer improves the score.</td></tr>
+    <tr><td><b>After the consult</b></td><td><b>Overview → Record doctor clearance</b> (doctor’s name) → <b>Start programme</b> (day 1 of 21).</td></tr>
+    <tr><td><b>Every day</b></td><td><b>Work queue.</b> Red flags first: tell the doctor the same day, then <b>Acknowledge alert</b> with the doctor’s name. Upload meal photos patients send (<b>Plates → Upload plate</b>). Call patients who stop logging.</td></tr>
+    <tr><td><b>Day 19 to 21</b></td><td><b>Measures → Record a visit → Week 3 check-in.</b> Repeat weight, waist, blood pressure, fasting and post-meal glucose, triglycerides. HbA1c is repeated at 12 weeks.</td></tr>
+    <tr><td><b>Report</b></td><td><b>Report → Create report draft.</b> The doctor reviews it and decides the next step. Record the step and the doctor’s name, tick, <b>Approve report</b>. Print the <b>Patient summary</b>.</td></tr>
+    <tr><td><b>Leaving</b></td><td><b>Export patient data</b> (offer a copy) → <b>Withdraw consent</b>. Nothing new can be added afterwards.</td></tr>
+  </table>
+</section>
+<section class="page">
+  <h2>Quick reference: nutritionist and admin</h2>
+  <h2 style="font-size:13pt">Nutritionist (Good Food Guru)</h2>
+  <ul>
+    <li>Open the <b>Work queue</b> daily; review plates within 24 hours.</li>
+    <li><b>Review plate:</b> tick the food groups (the plate graphic fills in) and any flags. A suggested score follows the tags; move the slider to set your own. Add a short comment in plain words.</li>
+    <li><b>Weekly audit:</b> write the week’s review and next week’s goals; tick whether the check-in session was attended.</li>
+    <li>Never give medication advice in comments or reviews.</li>
+  </ul>
+  <h2 style="font-size:13pt">Admin (Medinn)</h2>
+  <ul>
+    <li><b>Cohort:</b> totals only. No names; any group under 5 patients is hidden.</li>
+    <li><b>Audit log:</b> who did what and when, with record ids and never clinical values. Filter and export to CSV. Viewing and exporting are logged too.</li>
+    <li>The admin cannot open patient records.</li>
+    <li>Health check: the website address + <code>/api/health</code>. “ok”: true means settings and database are working.</li>
+  </ul>
+  <h2 style="font-size:13pt">Status colours</h2>
+  <table>
+    <tr><td><span class="who" style="background:#E3EEE6">On track</span></td><td>No red flags; score 50 or more.</td></tr>
+    <tr><td><span class="who" style="background:#FBEBD0;color:#7A4E08">Needs attention</span></td><td>Score under 50, or more than 5 points lower than the last visit.</td></tr>
+    <tr><td><span class="who" style="background:#F7DDD6;color:#8A2B18">See your doctor</span></td><td>A red flag. Tell the doctor the same day.</td></tr>
+    <tr><td><span class="who" style="background:#F1F3F1;color:#5B6B62">Not enough data</span></td><td>Fewer than 4 of the 8 score parts recorded.</td></tr>
+  </table>
+  <h2 style="font-size:13pt">If something goes wrong</h2>
+  <ul>
+    <li><b>“Username and password do not match”</b>: check capital letters; copy-paste the password.</li>
+    <li><b>“Account is locked”</b>: wait 15 minutes.</li>
+    <li><b>“Something went wrong”</b>: tap Try again; if it repeats, tell the admin what you were doing.</li>
+    <li><b>Red box on the sign-in page</b>: server settings need attention. Tell the admin.</li>
+  </ul>
+  <p class="note">Annam calculates and displays. It never decides and never gives medication advice. The doctor decides; staff record the doctor’s decision by name.</p>
+</section>`;
+
 // ---------- PDF ----------
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const flow = [
@@ -287,7 +338,7 @@ const flow = [
   ['7', 'Report', 'Doctor decides the next step and approves', 'Doctor, recorded by staff']
 ];
 const today = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' });
-const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${CLINIC ? 'Annam: guide for RM Clinic staff' : 'Annam: UI and workflow'}</title>
+const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${CLINIC ? 'Annam: guide for RM Clinic staff' : MANUAL ? 'Annam by Medinn: user manual and workflow' : 'Annam: UI and workflow'}</title>
 <style>
 @page { size: A4; margin: 14mm 14mm 16mm; }
 * { box-sizing: border-box; }
@@ -321,9 +372,9 @@ th { color: #5B6B62; font-weight: 600; background: #FAFCF9; }
 .blank { display: inline-block; width: 110mm; border-bottom: 0.4mm solid #17251E; height: 7mm; }
 .note { border-left: 1.2mm solid #E3A03A; background: #FFFBF3; padding: 3mm 4mm; border-radius: 1.5mm; font-size: 9.5pt; }
 </style>
-<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&family=Noto+Serif+Malayalam:wght@700&display=swap" rel="stylesheet"></head><body>
+${FONTS_CSS ? `<style>${FONTS_CSS}</style>` : '<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&family=Noto+Serif+Malayalam:wght@700&display=swap" rel="stylesheet">'}</head><body>
 <section class="page cover">
-  <div class="band"><div class="ml">അന്നം</div><h1 style="color:#fff;margin-top:3mm">Annam</h1><p>${CLINIC ? 'Guide for RM Clinic staff: the workflow, the screens and your login' : 'UI and workflow walkthrough'}</p></div>
+  <div class="band"><div class="ml">അന്നം</div><h1 style="color:#fff;margin-top:3mm">Annam</h1><p>${CLINIC ? 'Guide for RM Clinic staff: the workflow, the screens and your login' : MANUAL ? 'by Medinn · User manual and workflow' : 'UI and workflow walkthrough'}</p>${MANUAL ? '<p style="margin-top:6mm;color:#fff;font-size:12pt"><b>First client: RM Clinic</b> · Nutrition partner: Good Food Guru</p>' : ''}</div>
   <div>
     <p style="font-size:13pt;max-width:150mm">Nutrition follow-up for clinics and labs: one patient profile for every plate, every measure and every report. RM Clinic staff enter the data after asking the patient; the Good Food Guru nutritionist reviews plates; the doctor decides.</p>
     <p class="note">Every screen in this document uses invented sample patients. Do not enter real patient information until the pilot checklist is signed off.</p>
@@ -361,6 +412,25 @@ ${CLINIC ? `<section class="page">
   </table>
   <p class="note">Annam calculates and shows; it never decides and never gives medicine advice. The doctor decides, and you record the doctor’s decision with their name.</p>
 </section>` : ''}
+${MANUAL ? `<section class="page">
+  <h2>Getting started</h2>
+  <table class="login">
+    <tr><th>Website</th><td><b>${esc(LOGIN_URL || 'https://annam-medinn.vercel.app')}</b></td></tr>
+    <tr><th>RM Clinic staff</th><td><code>rmclinic</code></td></tr>
+    <tr><th>Nutritionist</th><td><code>nutritionist</code></td></tr>
+    <tr><th>Admin (Medinn)</th><td><code>admin</code> + 6-digit code from Google Authenticator</td></tr>
+  </table>
+  <p class="note">Passwords are given separately to each team by Medinn. They are not printed in this manual.</p>
+  <h2 style="font-size:13pt">Signing in</h2>
+  <ul>
+    <li>Enter your team’s username and password, and type <b>your own name</b>. Logins are shared by a team; your name goes on everything you record, so the record shows who did what.</li>
+    <li>Five wrong passwords lock the login for 15 minutes. Staff are signed out after 10 hours, the admin after 2.</li>
+    <li>On a phone, open the website and choose <b>Add to Home Screen</b>. Annam then opens like an app.</li>
+    <li>Use <b>Sign out</b> (top right) on any shared computer.</li>
+  </ul>
+  <h2 style="font-size:13pt">About Annam</h2>
+  <p>Annam (അന്നം, “food”) is Medinn’s nutrition follow-up platform for clinics and labs. A patient joins at the clinic, is measured, sends a photo of every meal for three weeks, and is measured again. The nutritionist reviews every plate and writes weekly reviews; the system calculates a health score and risk profile; the doctor reads the report, decides the next step and approves it. <b>RM Clinic is the first client</b>; more clinics will join, each seeing only its own patients.</p>
+</section>` : ''}
 <section class="page">
   <h2>The workflow</h2>
   <p class="muted">Seven steps over three weeks, and who does each one.</p>
@@ -384,6 +454,7 @@ ${shots.map(s => `<section class="page">
   ${s.images.map(i => `<figure><img src="data:image/png;base64,${i.src}" alt=""><figcaption>${esc(i.caption)}</figcaption></figure>`).join('')}
   ${s.phone ? `<div class="phones">${s.phone.map(p => `<img src="data:image/png;base64,${p}" alt="">`).join('')}</div><p class="muted" style="text-align:center;font-size:9pt">Patient list · overview · upload plate as a bottom sheet</p>` : ''}
 </section>`).join('\n')}
+${MANUAL ? QUICK_REFERENCE : ''}
 </body></html>`;
 
 mkdirSync('.data', { recursive: true });
@@ -391,7 +462,7 @@ writeFileSync('.data/ui-tour.html', html);
 const pdfBrowser = await chromium.launch();
 const pp = await pdfBrowser.newPage();
 await pp.goto('file://' + process.cwd() + '/.data/ui-tour.html', { waitUntil: 'networkidle' });
-await pp.pdf({ path: OUT, format: 'A4', printBackground: true, displayHeaderFooter: true, headerTemplate: '<span></span>', footerTemplate: `<div style="font-size:8px;color:#5B6B62;width:100%;text-align:center">Annam · ${CLINIC ? 'RM Clinic guide · contains a password, keep private' : 'sample data only'} · <span class="pageNumber"></span> of <span class="totalPages"></span></div>`, margin: { top: '14mm', bottom: '16mm', left: '14mm', right: '14mm' } });
+await pp.pdf({ path: OUT, format: 'A4', printBackground: true, displayHeaderFooter: true, headerTemplate: '<span></span>', footerTemplate: `<div style="font-size:8px;color:#5B6B62;width:100%;text-align:center">Annam by Medinn · ${CLINIC ? 'RM Clinic guide · contains a password, keep private' : MANUAL ? 'User manual · screens show invented sample patients' : 'sample data only'} · <span class="pageNumber"></span> of <span class="totalPages"></span></div>`, margin: { top: '14mm', bottom: '16mm', left: '14mm', right: '14mm' } });
 await pdfBrowser.close();
 stop();
 console.log('Wrote', OUT, shots.length, 'sections');

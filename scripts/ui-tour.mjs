@@ -5,6 +5,7 @@ import { spawn } from 'node:child_process';
 import { createHmac, randomBytes, scryptSync } from 'node:crypto';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { chromium } from '@playwright/test';
+import { DEFAULT_SITE, LOCKOUT, RED_FLAGS, SESSION_TEXT, SIGN_IN_ERRORS, STATUS_ROWS, esc, siteOrigin } from './lib/doc-shared.mjs';
 
 const OUT = process.argv[2] ?? 'annam-ui-workflow.pdf';
 // ANNAM_TOUR_EDITION=clinic makes the RM Clinic guide: clinic screens only, a login page and a daily checklist.
@@ -79,7 +80,7 @@ const settle = page => page.waitForTimeout(400);
 
 // 1. Sign in
 let page = await context();
-step('Sign in', 'Everyone', ['Three fixed logins: rmclinic (clinic staff), nutritionist, admin. No sign-up.', 'Each person also types their own name. It goes on every record and the audit log, because the logins are shared by a team.', 'Five wrong passwords lock the account for 15 minutes. The admin also needs a code from an authenticator app.']);
+step('Sign in', 'Everyone', ['Three fixed logins: rmclinic (clinic staff), nutritionist, admin. No sign-up.', 'Each person also types their own name. It goes on every record and the audit log, because the logins are shared by a team.', `${LOCKOUT}. The admin also needs a code from an authenticator app.`]);
 await page.goto(BASE + '/login');
 await add(page.locator('main'), 'Sign-in page');
 
@@ -130,7 +131,7 @@ await settle(page);
 await add(page.locator('main'), 'Measures table: one column per visit, carried-forward values in brackets', { });
 
 // 5. Score
-step('Step 4: Health score and risk', 'Calculated by the system; read by everyone', ['Health score 0 to 100: the American Heart Association’s Life’s Essential 8, with WHO cut-offs for BMI in Asian populations. Four behaviours (diet, activity, tobacco, sleep) and four health factors (BMI, lipids, glucose, blood pressure).', 'Change since baseline compares only measures recorded both times.', 'Risk beside it: Indian Diabetes Risk Score, FIB-4, metabolic syndrome, waist-to-height ratio, eGFR. Cardiovascular risk stays “Not calculated” until the clinical lead picks a South Asia chart.', 'Status: See your doctor (red flag), Needs attention (score under 50 or falling), On track, or Not enough data.']);
+step('Step 4: Health score and risk', 'Calculated by the system; read by everyone', ['Health score 0 to 100: the American Heart Association’s Life’s Essential 8, with WHO cut-offs for BMI in Asian populations. Four behaviours (diet, activity, tobacco, sleep) and four health factors (BMI, lipids, glucose, blood pressure).', 'Change since baseline compares only measures recorded both times.', 'Risk beside it: Indian Diabetes Risk Score, FIB-4, metabolic syndrome, waist-to-height ratio, eGFR. Cardiovascular risk stays “Not calculated” until the clinical lead picks a South Asia chart.', `Status: ${STATUS_ROWS.map(([st, txt]) => `${st} (${txt.replace(/\.$/, '').toLowerCase()})`).join('; ')}.`]);
 await open(page, 'Sample patient A');
 await settle(page);
 await add(page.locator('main .grid2').first(), 'Overview of Sample patient A: score and risk');
@@ -212,7 +213,7 @@ await settle(np);
 await add(np, 'Work queue');
 
 // 11. Red flag
-step('Red flag: tell the doctor the same day', 'RM Clinic staff', ['Red flags (blood pressure 160/100 or higher, fasting glucose 250+ or below 70, FIB-4 above 2.67, eGFR below 30, triglycerides 1000+) raise an alert at once.', 'The alert shows on the patient and in the work queue until staff record which doctor was told.', 'Status becomes “See your doctor”, with the flag as the reason.']);
+step('Red flag: tell the doctor the same day', 'RM Clinic staff', [`Red flags raise an alert at once: ${RED_FLAGS.join('; ')}.`, 'The alert shows on the patient and in the work queue until staff record which doctor was told.', 'Status becomes “See your doctor”, with the flag as the reason.']);
 await open(page, 'Sample patient D');
 await settle(page);
 await add(page, 'Sample patient D: alert at the top, status “See your doctor”');
@@ -276,7 +277,7 @@ if (CLINIC) {
   const notForClinic = ['Step 5b', 'Step 5c', 'Admin:'];
   for (let i = shots.length - 1; i >= 0; i--) if (notForClinic.some(t => shots[i].title.startsWith(t))) shots.splice(i, 1);
   const signIn = shots.find(s => s.title === 'Sign in');
-  if (signIn) signIn.lines = ['Your team shares one login: rmclinic. The password is on page 2.', 'Every time you sign in, type your own name. It goes on everything you record, so the record shows who did what.', 'Five wrong passwords lock the login for 15 minutes. You are signed out automatically after 10 hours.'];
+  if (signIn) signIn.lines = ['Your team shares one login: rmclinic. The password is on page 2.', 'Every time you sign in, type your own name. It goes on everything you record, so the record shows who did what.', `${LOCKOUT}. ${SESSION_TEXT}.`];
 }
 
 // Quick-reference pages for the manual edition.
@@ -311,23 +312,16 @@ const QUICK_REFERENCE = `<section class="page">
   </ul>
   <h2 style="font-size:13pt">Status colours</h2>
   <table>
-    <tr><td><span class="who" style="background:#E3EEE6">On track</span></td><td>No red flags; score 50 or more.</td></tr>
-    <tr><td><span class="who" style="background:#FBEBD0;color:#7A4E08">Needs attention</span></td><td>Score under 50, or more than 5 points lower than the last visit.</td></tr>
-    <tr><td><span class="who" style="background:#F7DDD6;color:#8A2B18">See your doctor</span></td><td>A red flag. Tell the doctor the same day.</td></tr>
-    <tr><td><span class="who" style="background:#F1F3F1;color:#5B6B62">Not enough data</span></td><td>Fewer than 4 of the 8 score parts recorded.</td></tr>
+    ${STATUS_ROWS.map(([st, txt, bg, fg]) => `<tr><td><span class="who" style="background:${bg};color:${fg}">${st}</span></td><td>${txt}</td></tr>`).join('')}
   </table>
   <h2 style="font-size:13pt">If something goes wrong</h2>
   <ul>
-    <li><b>“Username and password do not match”</b>: check capital letters; copy-paste the password.</li>
-    <li><b>“Account is locked”</b>: wait 15 minutes.</li>
-    <li><b>“Something went wrong”</b>: tap Try again; if it repeats, tell the admin what you were doing.</li>
-    <li><b>Red box on the sign-in page</b>: server settings need attention. Tell the admin.</li>
+    ${SIGN_IN_ERRORS.map(([msg, fix]) => `<li><b>${msg}</b>: ${fix}</li>`).join('')}
   </ul>
   <p class="note">Annam calculates and displays. It never decides and never gives medication advice. The doctor decides; staff record the doctor’s decision by name.</p>
 </section>`;
 
 // ---------- PDF ----------
-const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const flow = [
   ['1', 'Walk-in', 'Consent, safety questions', 'Clinic staff'],
   ['2', 'Baseline', 'Measures, labs, answers', 'Clinic staff'],
@@ -393,7 +387,7 @@ ${CLINIC ? `<section class="page">
   <h2 style="font-size:13pt">Good to know</h2>
   <ul>
     <li>Add Annam to your phone’s home screen: open the website, then Share → <b>Add to Home Screen</b> (iPhone) or ⋮ → <b>Add to Home screen</b> (Android). It opens like an app.</li>
-    <li>Five wrong passwords lock the login for 15 minutes.</li>
+    <li>${LOCKOUT}.</li>
     <li>Sign out on shared computers: <b>Sign out</b> is at the top right.</li>
     <li>If a page says <b>Something went wrong</b>, try again; if it keeps happening, tell the Annam admin what you were doing.</li>
     <li>Never enter real patients while the site shows the yellow <b>Demo</b> banner.</li>
@@ -415,7 +409,7 @@ ${CLINIC ? `<section class="page">
 ${MANUAL ? `<section class="page">
   <h2>Getting started</h2>
   <table class="login">
-    <tr><th>Website</th><td><b>${esc(LOGIN_URL || 'https://annam-medinn.vercel.app')}</b></td></tr>
+    <tr><th>Website</th><td><b>${esc(LOGIN_URL ? siteOrigin(LOGIN_URL) : DEFAULT_SITE)}</b></td></tr>
     <tr><th>RM Clinic staff</th><td><code>rmclinic</code></td></tr>
     <tr><th>Nutritionist</th><td><code>nutritionist</code></td></tr>
     <tr><th>Admin (Medinn)</th><td><code>admin</code> + 6-digit code from Google Authenticator</td></tr>
@@ -424,7 +418,7 @@ ${MANUAL ? `<section class="page">
   <h2 style="font-size:13pt">Signing in</h2>
   <ul>
     <li>Enter your team’s username and password, and type <b>your own name</b>. Logins are shared by a team; your name goes on everything you record, so the record shows who did what.</li>
-    <li>Five wrong passwords lock the login for 15 minutes. Staff are signed out after 10 hours, the admin after 2.</li>
+    <li>${LOCKOUT}. ${SESSION_TEXT}.</li>
     <li>On a phone, open the website and choose <b>Add to Home Screen</b>. Annam then opens like an app.</li>
     <li>Use <b>Sign out</b> (top right) on any shared computer.</li>
   </ul>

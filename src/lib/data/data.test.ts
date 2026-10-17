@@ -11,7 +11,7 @@ import { Forbidden, UserError, type Ctx } from './context';
 import { isJpeg, stripJpegMetadata } from './jpeg';
 import { hashPassword, verifyPassword } from '../auth/password';
 import { base32Encode, totpCode, verifyTotp } from '../auth/totp';
-import { can } from '../auth/roles';
+import { afterFailedSignIn, can } from '../auth/roles';
 
 const clinic: Ctx = { role: 'clinic', actor: { account: 'rmclinic', staff: 'Test clinic staff' } };
 const nutri: Ctx = { role: 'nutritionist', actor: { account: 'nutritionist', staff: 'Test nutritionist' } };
@@ -251,6 +251,13 @@ describe('helpers', () => {
     ], [1, 2, 2, 9]);
     expect(a).toEqual({ daysElapsed: 21, daysLogged: 2, weeksCompleted: 3, checkinsAttended: 2, platesUploaded: 3, platesReviewed: 2 });
     expect(adherence('2026-10-01', '2026-10-01', [], []).weeksCompleted).toBe(0);
+  });
+  it('sign-in lockout: 5 wrong tries lock it; after the lock runs out the count starts again', () => {
+    const now = new Date('2026-10-17T10:00:00Z');
+    expect(afterFailedSignIn(3, null, now)).toEqual({ failedAttempts: 4, lock: false });
+    expect(afterFailedSignIn(4, null, now)).toEqual({ failedAttempts: 5, lock: true });
+    expect(afterFailedSignIn(5, '2026-10-17T09:59:00Z', now)).toEqual({ failedAttempts: 1, lock: false }); // lock expired
+    expect(afterFailedSignIn(5, '2026-10-17T10:05:00Z', now)).toEqual({ failedAttempts: 6, lock: true }); // still locked
   });
   it('passwords', () => {
     const h = hashPassword('correct horse');

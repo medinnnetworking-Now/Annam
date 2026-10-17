@@ -1,13 +1,15 @@
-// Print the field guide for staff and the Malayalam patient flyer as PDFs.
-// Usage: node scripts/print-docs.mjs <out-dir>   (ANNAM_TOUR_FONTS_CSS: stylesheet with embedded fonts)
-// Values mirror src/lib/measures.ts and src/lib/scoring/config.ts; update both together.
+// Print the field guide, the two-page quick guide and the Malayalam patient flyer as PDFs.
+// Usage: node scripts/print-docs.mjs <out-dir>
+//   ANNAM_TOUR_FONTS_CSS: stylesheet with embedded fonts. ANNAM_TOUR_LOGIN_URL: the site address.
+// Clinical thresholds come from src/lib/scoring/config.ts through scripts/lib/doc-shared.mjs.
+// Measuring instructions and plausibility ranges mirror src/lib/measures.ts; update them together.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from '@playwright/test';
+import { RF, CATEGORY_TEXT, DRAFT_NOTE, LOCKOUT, MIN_PARTS, RED_FLAGS, RISK, SIGN_IN_ERRORS, STATUS_ROWS, esc, siteOrigin } from './lib/doc-shared.mjs';
 
 const OUT = process.argv[2] ?? '.data/docs';
 const FONTS = process.env.ANNAM_TOUR_FONTS_CSS ? readFileSync(process.env.ANNAM_TOUR_FONTS_CSS, 'utf8') : '';
-const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const today = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' });
 
 const BASE_CSS = `
@@ -50,7 +52,7 @@ const ask = (en, ml) => `<tr><td><b>${en[0]}</b><br><span class="opt">Optional</
 const guide = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Annam: field guide for data entry</title><style>${FONTS}${BASE_CSS}</style></head><body>
 <section class="page">
   <div class="band"><div><div class="mls" style="font-size:28pt;line-height:1">അന്നം</div><h1 style="margin-top:2mm">Field guide for data entry</h1><p>Every field in Annam: what it means, how to measure it, and what it is used for. For RM Clinic staff and anyone entering data.</p></div>${mark(64)}</div>
-  <div class="note"><b>The golden rule: enter only what you have.</b> Only <b>name, sex, age (or date of birth) and consent</b> are required to register a patient, and <b>one value</b> is enough to save a visit. Empty fields are fine; you can add them at the next visit. The health score appears once 4 of its 8 parts are recorded.</div>
+  <div class="note"><b>The golden rule: enter only what you have.</b> Only <b>name, sex, age (or date of birth) and consent</b> are required to register a patient, and <b>one value</b> is enough to save a visit. Empty fields are fine; you can add them at the next visit. The health score appears once ${MIN_PARTS} of its 8 parts are recorded.</div>
   <h2>1. Registering a patient</h2>
   <table>
     <tr><th style="width:24%">Field</th><th style="width:46%">How to fill it</th><th>Used for</th></tr>
@@ -82,17 +84,17 @@ const guide = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title
     ${field('Height', 'cm', 0, 'No shoes, heels against the wall, looking straight ahead. Needed once; it carries forward.', '120–210', 'BMI, waist-to-height ratio')}
     ${field('Waist', 'cm', 0, 'Standing, at the end of a normal breath out. Tape level, snug but not tight, <b>midway between the lowest rib and the top of the hip bone</b> (WHO). Not over thick clothes.', '45–180', 'Diabetes risk, metabolic syndrome, waist-to-height ratio, trends')}
     ${field('Hip', 'cm', 0, 'Around the widest part of the buttocks, tape level.', '55–190', 'Shown on the record')}
-    ${field('Blood pressure', 'mmHg', 0, 'Seated, back supported, feet flat, after <b>5 minutes’ rest</b>; no tea, coffee or smoking for 30 minutes. Right-size cuff on a bare upper arm at heart level. Take 2 readings 1–2 minutes apart and enter the average. <b>Enter both</b> systolic (top) and diastolic (bottom).', 'Sys 70–260<br>Dia 40–150', 'Score (blood pressure), metabolic syndrome, <b>red flag at 160/100 or higher</b>')}
-    ${field('Fasting glucose', 'mg/dL', 0, 'After at least 8 hours without food (water is fine). If the lab gives mmol/L, multiply by 18.', '40–600', 'Score (glucose), metabolic syndrome, <b>red flag at 250+ or below 70</b>')}
+    ${field('Blood pressure', 'mmHg', 0, 'Seated, back supported, feet flat, after <b>5 minutes’ rest</b>; no tea, coffee or smoking for 30 minutes. Right-size cuff on a bare upper arm at heart level. Take 2 readings 1–2 minutes apart and enter the average. <b>Enter both</b> systolic (top) and diastolic (bottom).', 'Sys 70–260<br>Dia 40–150', `Score (blood pressure), metabolic syndrome, <b>red flag at ${RF.sbpFrom}/${RF.dbpFrom} or higher (either number)</b>`)}
+    ${field('Fasting glucose', 'mg/dL', 0, 'After at least 8 hours without food (water is fine). If the lab gives mmol/L, multiply by 18.', '40–600', `Score (glucose), metabolic syndrome, <b>red flag at ${RF.fpgFrom}+ or below ${RF.fpgBelow}</b>`)}
     ${field('Post-meal glucose', 'mg/dL', 0, '2 hours after the start of a meal.', '40–700', 'Shown on the report and trends')}
     ${field('HbA1c', '%', 0, 'From the lab. Reflects about 3 months, so it is repeated at 12 weeks, not week 3. Annam carries it forward up to 120 days.', '3.5–18', 'Score (glucose), diabetes range')}
     ${field('Total cholesterol', 'mg/dL', 0, 'From the lab report.', '70–500', 'Score (blood lipids: total minus HDL)')}
     ${field('LDL', 'mg/dL', 0, 'From the lab report.', '20–400', 'Shown on the report')}
     ${field('HDL', 'mg/dL', 0, 'From the lab report.', '10–150', 'Score (blood lipids), metabolic syndrome')}
-    ${field('Triglycerides', 'mg/dL', 0, 'From the lab report; fasting sample preferred.', '30–3000', 'Metabolic syndrome, <b>red flag at 1000+</b>')}
+    ${field('Triglycerides', 'mg/dL', 0, 'From the lab report; fasting sample preferred.', '30–3000', `Metabolic syndrome, <b>red flag at ${RF.tgFrom}+</b>`)}
     ${field('AST, ALT', 'U/L', 0, 'From the liver function test (AST = SGOT, ALT = SGPT).', '5–1000', 'Liver score (FIB-4)')}
     ${field('Platelets', '10⁹/L', 0, 'From the blood count. <b>Convert lakhs:</b> 2.5 lakh/cumm = 250. 250,000/µL = 250.', '20–1000', 'Liver score (FIB-4)')}
-    ${field('Creatinine', 'mg/dL', 0, 'From the kidney function test.', '0.2–15', 'Kidney function (eGFR), <b>red flag if eGFR below 30</b>')}
+    ${field('Creatinine', 'mg/dL', 0, 'From the kidney function test.', '0.2–15', `Kidney function (eGFR), <b>red flag if eGFR below ${RF.egfrBelow}</b>`)}
   </table>
   <div class="note">Lab values carry forward to later visits for up to 120 days. Weight, waist, hip and blood pressure must be measured at each visit. Height carries forward always.</div>
 </section>
@@ -123,7 +125,7 @@ const guide = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title
 <section class="page">
   <h2>5. What Annam calculates</h2>
   <h3>Health score (0–100)</h3>
-  <p style="margin:0 0 1.5mm">Based on the American Heart Association’s <b>Life’s Essential 8</b>, with WHO BMI cut-offs for Asian populations. Eight parts, each 0–100; the score is their average once at least 4 are recorded. <b>80+ high, 50–79 moderate, under 50 low.</b></p>
+  <p style="margin:0 0 1.5mm">Based on the American Heart Association’s <b>Life’s Essential 8</b>, with WHO BMI cut-offs for Asian populations. Eight parts, each 0–100; the score is their average once at least ${MIN_PARTS} are recorded. <b>${CATEGORY_TEXT}.</b></p>
   <table>
     <tr><th style="width:22%">Part</th><th style="width:36%">Comes from</th><th>Full points</th></tr>
     <tr><td>Diet quality</td><td>Average reviewed plate score, last 7 days</td><td>Plate average 10 of 10</td></tr>
@@ -139,28 +141,25 @@ const guide = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title
   <h3>Risk tools</h3>
   <table>
     <tr><th style="width:26%">Tool</th><th style="width:38%">Needs</th><th>Reading it</th></tr>
-    <tr><td>Indian Diabetes Risk Score</td><td>Age, waist, work/exercise type, family history</td><td>60+ high, 30–59 moderate, under 30 low</td></tr>
-    <tr><td>FIB-4 (liver)</td><td>Age, AST, ALT, platelets</td><td>Under 1.3 low, above 2.67 high</td></tr>
-    <tr><td>Metabolic syndrome</td><td>Waist, triglycerides, HDL, blood pressure, glucose</td><td>3 of 5 criteria = present</td></tr>
-    <tr><td>Waist-to-height ratio</td><td>Waist, height</td><td>Under 0.5 healthy; 0.6+ high</td></tr>
+    <tr><td>Indian Diabetes Risk Score</td><td>Age, waist, work/exercise type, family history</td><td>${RISK.idrs}</td></tr>
+    <tr><td>FIB-4 (liver)</td><td>Age, AST, ALT, platelets</td><td>${RISK.fib4}</td></tr>
+    <tr><td>Metabolic syndrome</td><td>Waist, triglycerides, HDL, blood pressure, glucose</td><td>${RISK.metSyn}</td></tr>
+    <tr><td>Waist-to-height ratio</td><td>Waist, height</td><td>${RISK.whtr}</td></tr>
     <tr><td>Kidney function (eGFR)</td><td>Creatinine, age, sex</td><td>60+ normal for age; under 30 is a red flag</td></tr>
     <tr><td>Cardiovascular risk</td><td colspan="2">Not calculated until the clinical lead chooses a chart validated for South Asia.</td></tr>
   </table>
   <h3>Red flags: tell the doctor the same day</h3>
-  <div class="note alert">Blood pressure 160/100 or higher · Fasting glucose 250 mg/dL or higher, or below 70 · FIB-4 above 2.67 · eGFR below 30 · Triglycerides 1000 mg/dL or higher. Annam raises an alert; staff tell the doctor and acknowledge it with the doctor’s name.</div>
+  <div class="note alert">${RED_FLAGS.join(' · ')}. Annam raises an alert; staff tell the doctor and acknowledge it with the doctor’s name.</div>
   <h3>Status</h3>
   <table>
-    <tr><td style="width:26%"><b>See your doctor</b></td><td>Any red flag</td></tr>
-    <tr><td><b>Not enough data</b></td><td>Fewer than 4 of 8 score parts</td></tr>
-    <tr><td><b>Needs attention</b></td><td>Score under 50, or more than 5 points lower than the last visit</td></tr>
-    <tr><td><b>On track</b></td><td>None of the above</td></tr>
+    ${STATUS_ROWS.map(([st, txt]) => `<tr><td style="width:26%"><b>${st}</b></td><td>${txt}</td></tr>`).join('')}
   </table>
-  <p class="muted" style="font-size:8.5pt;margin-top:4mm">Score version 2026.10-le8-sa.1. All thresholds are drafts, to be signed off by the clinical lead. Annam supports the care team; it does not diagnose, and the doctor decides on treatment. Annam by Medinn · first client RM Clinic · ${today}.</p>
+  <p class="muted" style="font-size:8.5pt;margin-top:4mm">${DRAFT_NOTE} Annam supports the care team; it does not diagnose, and the doctor decides on treatment. Annam by Medinn · first client RM Clinic · ${today}.</p>
 </section>
 </body></html>`;
 
 // ---------------------------------------------------------------- Quick guide (2 pages)
-const SITE = process.env.ANNAM_TOUR_LOGIN_URL ?? 'https://annam-medinn.vercel.app';
+const SITE = siteOrigin(process.env.ANNAM_TOUR_LOGIN_URL);
 const qstep = (n, title, body) => `<div class="qs"><b>${n}</b><div><span class="t">${title}</span>${body}</div></div>`;
 const quickGuide = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Annam: quick guide</title><style>${FONTS}${BASE_CSS}
 body { font-size: 9.5pt; }
@@ -174,11 +173,11 @@ body { font-size: 9.5pt; }
 <section class="page">
   <div class="band"><div><div class="mls" style="font-size:24pt;line-height:1">അന്നം</div><h1 style="margin-top:1.5mm;font-size:20pt">Quick guide</h1><p>Annam by Medinn · RM Clinic</p></div>
     <div style="text-align:right;font-size:9.5pt;color:#fff"><b>${esc(SITE)}</b><br>rmclinic · nutritionist · admin<br><span style="color:#BFD6C6">Passwords from Medinn</span></div></div>
-  <p style="margin:0 0 1mm"><b>Sign in:</b> username, password, and <b>your own name</b> every time. 5 wrong tries lock it for 15 minutes. <b>Only name, sex, age and consent are required</b>; leave anything else empty if you don’t have it.</p>
+  <p style="margin:0 0 1mm"><b>Sign in:</b> username, password, and <b>your own name</b> every time. ${LOCKOUT}. <b>Required: name, sex, age or birth date, and consent</b>; leave other fields empty if you don’t have them, but <b>always ask the 5 safety questions</b>.</p>
   <h2>RM Clinic staff</h2>
-  ${qstep(1, 'Walk-in: add the patient', '<span class="tap">Patients → Add patient</span>. Name, sex, age. Ask the 5 safety questions. Read the consent text, tick consent, <span class="tap">Add patient</span>.')}
+  ${qstep(1, 'Walk-in: add the patient', '<span class="tap">Patients → Add patient</span>. Name, sex, age or birth date. Always ask the 5 safety questions. Read the consent text, tick consent, <span class="tap">Add patient</span>.')}
   ${qstep(2, 'Baseline: record what was measured', '<span class="tap">Measures → Record baseline</span>. Weight, waist, BP, sugar on top; labs under <i>More lab values</i>. Ask: activity, sleep, tobacco, medicines (yes/no). One value is enough to save.')}
-  ${qstep(3, 'After the doctor’s consult', '<span class="tap">Overview → Record doctor clearance</span> with the doctor’s name, then <span class="tap">Start programme</span>. Day 1 of 21.')}
+  ${qstep(3, 'After the doctor’s consult', '<span class="tap">Overview → Record doctor clearance</span> with the doctor’s name, then <span class="tap">Start programme</span>. Day 1 of 21. <b>If any safety question was ticked</b>, the patient shows “Not suitable” and the clinical lead’s name is needed too.')}
   ${qstep(4, 'Every day for 3 weeks', '<span class="tap">Work queue</span>. <b>Red flags first: tell the doctor today</b>, then <span class="tap">Acknowledge alert</span> with the doctor’s name. Upload meal photos patients send: <span class="tap">Plates → Upload plate</span> (no faces).')}
   ${qstep(5, 'Day 19 to 21: week 3 visit', '<span class="tap">Measures → Record a visit → Week 3 check-in</span>. Weight, waist, BP, fasting and post-meal sugar, triglycerides.')}
   ${qstep(6, 'Report and approval', '<span class="tap">Report → Create report draft</span>. The doctor decides the next step. Choose it, type the doctor’s name, tick, <span class="tap">Approve report</span>. Print the <span class="tap">Patient summary</span>.')}
@@ -206,7 +205,7 @@ body { font-size: 9.5pt; }
       <p style="font-size:9pt">Never give medicine advice.</p>
       <h2>Admin (with 6-digit code)</h2>
       <ul style="font-size:9pt">
-        <li><b>Cohort:</b> totals only, no names.</li>
+        <li><b>Cohort:</b> totals only, no names (RM Clinic staff can see it too).</li>
         <li><b>Audit log:</b> who did what; export CSV.</li>
         <li>Health check: <code>${esc(SITE)}/api/health</code></li>
       </ul>
@@ -217,21 +216,16 @@ body { font-size: 9.5pt; }
         <div>½ vegetables<br>¼ protein and pulses<br>¼ grains and millets<br>+ fruit and dairy</div></div>
       <h2>Status colours</h2>
       <table>
-        <tr><td><span class="chip" style="background:#E3EEE6;color:#183D2B">On track</span></td><td>All fine</td></tr>
-        <tr><td><span class="chip" style="background:#FBEBD0;color:#7A4E08">Needs attention</span></td><td>Score under 50 or falling</td></tr>
-        <tr><td><span class="chip" style="background:#F7DDD6;color:#8A2B18">See your doctor</span></td><td>Red flag: tell the doctor today</td></tr>
-        <tr><td><span class="chip" style="background:#F1F3F1;color:#5B6B62">Not enough data</span></td><td>Fewer than 4 of 8 score parts</td></tr>
+        ${STATUS_ROWS.map(([st, txt, bg, fg]) => `<tr><td><span class="chip" style="background:${bg};color:${fg}">${st}</span></td><td>${txt}</td></tr>`).join('')}
       </table>
     </div>
   </div>
   <h2>Red flags: tell the doctor the same day</h2>
-  <div class="note alert" style="font-size:9.5pt">BP <b>160/100</b> or higher · Fasting sugar <b>250+</b> or <b>below 70</b> · FIB-4 above 2.67 · eGFR below 30 · Triglycerides 1000+</div>
+  <div class="note alert" style="font-size:9.5pt">${RED_FLAGS.join(' · ')}</div>
+  <p class="muted" style="font-size:8pt;margin:-1mm 0 0">${DRAFT_NOTE}</p>
   <h2>If something goes wrong</h2>
   <table>
-    <tr><td style="width:42%"><b>“Username and password do not match”</b></td><td>Check capital letters; copy-paste the password.</td></tr>
-    <tr><td><b>“Account is locked”</b></td><td>Wait 15 minutes.</td></tr>
-    <tr><td><b>“Something went wrong”</b></td><td>Tap Try again. If it repeats, tell the admin what you were doing.</td></tr>
-    <tr><td><b>Red box on the sign-in page</b></td><td>Server settings need attention. Tell the admin.</td></tr>
+    ${SIGN_IN_ERRORS.map(([msg, fix]) => `<tr><td style="width:46%"><b>${msg}</b></td><td>${fix}</td></tr>`).join('')}
   </table>
   <h2>Rules</h2>
   <ul>

@@ -33,3 +33,13 @@ export const HOME: Record<Role, string> = { clinic: '/patients', nutritionist: '
 export const SESSION_HOURS: Record<Role, number> = { clinic: 10, nutritionist: 10, admin: 2 };
 export const MAX_FAILED_SIGN_INS = 5;
 export const LOCK_MINUTES = 15;
+
+/**
+ * Failed attempts after one more wrong password. A lock that has run out starts the count again,
+ * so people get the full number of tries after waiting, not one.
+ */
+export function afterFailedSignIn(failedAttempts: number, lockedUntil: string | null, now = new Date()): { failedAttempts: number; lock: boolean } {
+  const lockExpired = lockedUntil !== null && new Date(lockedUntil) <= now;
+  const failed = (lockExpired ? 0 : failedAttempts) + 1;
+  return { failedAttempts: failed, lock: failed >= MAX_FAILED_SIGN_INS };
+}

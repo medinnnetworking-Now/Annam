@@ -7,7 +7,7 @@ import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypt
 import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { getDb, type Actor, type Db } from '../db';
-import { ACCOUNTS, can, LOCK_MINUTES, MAX_FAILED_SIGN_INS, SESSION_HOURS, type Permission, type Role } from './roles';
+import { ACCOUNTS, afterFailedSignIn, can, LOCK_MINUTES, MAX_FAILED_SIGN_INS, SESSION_HOURS, type Permission, type Role } from './roles';
 import { verifyPassword } from './password';
 import { verifyTotp } from './totp';
 
@@ -75,9 +75,9 @@ export async function signIn(username: string, password: string, staffName: stri
     }
   }
   if (!ok) {
-    const fails = a.failed_attempts + 1;
-    await db.query(`update accounts set failed_attempts = $2::int, locked_until = case when $2::int >= $3::int then now() + make_interval(mins => $4::int) else locked_until end where username = $1`,
-      [a.username, fails, MAX_FAILED_SIGN_INS, LOCK_MINUTES]);
+    const next = afterFailedSignIn(a.failed_attempts, a.locked_until);
+    await db.query(`update accounts set failed_attempts = $2::int, locked_until = case when $3::boolean then now() + make_interval(mins => $4::int) else null end where username = $1`,
+      [a.username, next.failedAttempts, next.lock, LOCK_MINUTES]);
     await audit(db, a.username, null, 'sign_in_failed', { reason: 'bad_credentials' });
     return a.role === 'admin' && process.env.ANNAM_ADMIN_TOTP_SECRET ? { ok: false, error: 'That username, password or code does not match. Check them and try again.' } : generic;
   }

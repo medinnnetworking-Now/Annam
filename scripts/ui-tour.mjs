@@ -106,6 +106,7 @@ const gUrl = page.url().replace(/\/measures$/, '');
 step('Step 2: Baseline measures and the patient’s answers', 'RM Clinic staff (or nutritionist)', ['Body measures, blood pressure, glucose, lipids, liver and kidney labs, with units on every field. BMI is calculated.', 'Asked of the patient: minutes of brisk activity a week, hours of sleep, tobacco (smoked or chewed), second-hand smoke, work and exercise type, diagnosed diabetes, blood pressure and cholesterol medicine (yes/no only, never advice).', 'Values outside the usual range need a second look and a tick before they save.', 'Records: the visit, then a score snapshot with the score version.']);
 await page.getByRole('button', { name: 'Record baseline' }).click();
 const v = page.getByRole('dialog', { name: 'Record baseline' });
+await v.getByText('More lab values').click();
 for (const [l, val] of [['Weight (kg)', '74'], ['Height (cm)', '157'], ['Waist (cm)', '93'], ['Hip (cm)', '103'], ['Systolic (mmHg)', '136'], ['Diastolic (mmHg)', '86'], ['Fasting glucose (mg/dL)', '112'], ['Post-meal glucose (mg/dL)', '168'], ['HbA1c (%)', '6.2'], ['Total cholesterol (mg/dL)', '214'], ['LDL (mg/dL)', '136'], ['HDL (mg/dL)', '45'], ['Triglycerides (mg/dL)', '176'], ['AST (U/L)', '28'], ['ALT (U/L)', '36'], ['Platelets (10⁹/L)', '250'], ['Creatinine (mg/dL)', '0.8']]) await v.getByLabel(l, { exact: true }).fill(val);
 await v.getByLabel(/brisk walking/).fill('45');
 await v.getByLabel(/Hours of sleep/).fill('6');

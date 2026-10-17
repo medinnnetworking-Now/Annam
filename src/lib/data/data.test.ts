@@ -92,6 +92,24 @@ describe('patients and consent', () => {
   });
 });
 
+describe('minimal data entry', () => {
+  it('needs only name, sex, age and consent', async () => {
+    const id = await createPatient(db, clinic, { name: 'Age only', sex: 'F', age: '45', consent: true, consent_version: CONSENT_VERSION });
+    const p = (await getPatient(db, clinic, id)).patient;
+    expect(p).toMatchObject({ dob_estimated: true, family_history: null, referrer: 'RM Clinic' });
+    expect(new Date().getUTCFullYear() - Number(p.dob.slice(0, 4))).toBeGreaterThanOrEqual(45);
+    await expect(createPatient(db, clinic, { name: 'No age', sex: 'F', consent: true, consent_version: CONSENT_VERSION })).rejects.toThrow(/age/);
+    await expect(createPatient(db, clinic, { name: 'Child', sex: 'F', age: '12', consent: true, consent_version: CONSENT_VERSION })).rejects.toThrow(/adults/);
+  });
+  it('a visit needs just one value of any kind; the score waits for more', async () => {
+    const id = await createPatient(db, clinic, { name: 'One value', sex: 'M', age: '50', consent: true, consent_version: CONSENT_VERSION });
+    await expect(recordVisit(db, clinic, id, { label: 'Baseline', visit_date: today })).rejects.toThrow(/at least one/);
+    expect((await recordVisit(db, clinic, id, { label: 'Baseline', visit_date: today, sleep_hours: '7' })).ok).toBe(true);
+    const b = await getPatient(db, clinic, id);
+    expect(b.snapshots[0]).toMatchObject({ score: null, status: 'Not enough data' });
+  });
+});
+
 describe('the database guards', () => {
   it('refuses writes without a named actor', async () => {
     await expect(db.query(`insert into patients (code, name, dob, sex, referrer, family_history) values ('X', 'x', '1980-01-01', 'M', 'r', 'none')`)).rejects.toThrow(/no actor/);
@@ -111,7 +129,7 @@ describe('the full programme', () => {
   it('records a baseline: snapshot saved, state moves, warnings need confirmation', async () => {
     id = await createPatient(db, clinic, newPatient());
     expect(await recordVisit(db, clinic, id, baseline({ weight: '20' }))).toEqual({ ok: false, warnings: [expect.stringContaining('Weight 20 kg')] });
-    await expect(recordVisit(db, clinic, id, baseline({ weight: '', waist: '', sbp: '', dbp: '', fpg: '' }))).rejects.toThrow(/at least one/);
+    await expect(recordVisit(db, clinic, id, { label: 'Baseline', visit_date: addDays(today, -1) })).rejects.toThrow(/at least one/);
     await expect(recordVisit(db, clinic, id, baseline({ dbp: '' }))).rejects.toThrow(/both systolic/);
     await expect(recordVisit(db, clinic, id, baseline({ visit_date: addDays(today, 2) }))).rejects.toThrow(/future/);
     const r = await recordVisit(db, clinic, id, baseline());

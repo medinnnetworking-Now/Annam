@@ -36,7 +36,7 @@ export type Visit = { id?: string; date: string; label?: string } & Partial<Reco
 export type Effective = Partial<Record<MeasureKey, number | null>> & Lifestyle;
 export interface EffectiveResult { values: Effective; carried: Partial<Record<MeasureKey | LifestyleKey, string>> }
 
-export interface PatientCore { dob: string; sex: Sex; family: FamilyHistory }
+export interface PatientCore { dob: string; sex: Sex; family: FamilyHistory | null }
 export interface PlateForScore { date: string; score: number | null; reviewed: boolean }
 
 const DAY = 86_400_000;
@@ -233,8 +233,8 @@ export function suggestPlateScore(t: PlateTags, f: PlateFlags): number {
 
 export type RiskCategory = 'Low' | 'Moderate' | 'Indeterminate' | 'High' | 'Increased';
 
-export function idrs(age: number, sex: Sex, v: Effective, family: FamilyHistory): { score: number; category: RiskCategory } | null {
-  if (!has(v.waist) || !v.idrsActivity) return null;
+export function idrs(age: number, sex: Sex, v: Effective, family: FamilyHistory | null): { score: number; category: RiskCategory } | null {
+  if (!has(v.waist) || !v.idrsActivity || !family) return null;
   const a = upperBand(age, C.IDRS.age);
   const w = upperBand(v.waist, sex === 'F' ? C.IDRS.waistF : C.IDRS.waistM);
   const score = a + w + C.IDRS.activity[v.idrsActivity] + C.IDRS.family[family];

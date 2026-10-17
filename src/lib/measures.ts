@@ -56,8 +56,8 @@ export const visitSchema = z.object({
   has_diabetes: optBool,
   confirmed: z.preprocess(v => v === 'on' || v === true || v === 'true', z.boolean())
 }).superRefine((v, ctx) => {
-  if (v.weight == null && v.waist == null && (v.sbp == null || v.dbp == null) && v.fpg == null)
-    ctx.addIssue({ code: 'custom', message: 'Enter at least one of weight, waist, blood pressure (both values) or fasting glucose.', path: ['weight'] });
+  const anything = FIELDS.some(f => v[f.key] != null) || [v.activity_minutes, v.sleep_hours, v.tobacco, v.secondhand_smoke, v.idrs_activity, v.on_bp_meds, v.on_lipid_meds, v.has_diabetes].some(x => x != null);
+  if (!anything) ctx.addIssue({ code: 'custom', message: 'Enter at least one measure or answer. Every other field can stay empty.', path: ['weight'] });
   if ((v.sbp == null) !== (v.dbp == null)) ctx.addIssue({ code: 'custom', message: 'Enter both systolic and diastolic pressure, or neither.', path: ['sbp'] });
   if (v.sbp != null && v.dbp != null && v.dbp >= v.sbp) ctx.addIssue({ code: 'custom', message: 'Diastolic pressure must be lower than systolic. Check the order.', path: ['dbp'] });
 });
@@ -69,19 +69,23 @@ export function plausibilityWarnings(v: Partial<Record<MeasureKey, number | null
     .map(f => `${f.label} ${v[f.key]} ${f.unit} is outside the usual range of ${f.min} to ${f.max}.`);
 }
 
+const blank = (v: unknown) => (v === '' || v === null || v === undefined ? undefined : v);
+
+/** Required: name, sex, age or date of birth, and consent. Everything else can be added later or left out. */
 export const patientSchema = z.object({
   name: z.string().trim().min(1, 'Enter the patient’s name').max(80),
-  dob: isoDate,
-  sex: z.enum(['M', 'F']),
-  referrer: z.string().trim().min(1, 'Enter who referred the patient').max(80),
-  family_history: z.enum(['none', 'one', 'both']),
+  dob: z.preprocess(blank, isoDate.optional()),
+  age: z.preprocess(v => (blank(v) === undefined ? undefined : Number(v)), z.number().int().optional()),
+  sex: z.enum(['M', 'F'], { errorMap: () => ({ message: 'Choose female or male.' }) }),
+  referrer: z.preprocess(blank, z.string().trim().max(80).optional()),
+  family_history: z.preprocess(blank, z.enum(['none', 'one', 'both']).optional()),
   triage: z.array(z.enum(['insulin_or_su', 'kidney', 'pregnant', 'eating_disorder', 'recent_admission'])).default([]),
   consent: z.literal(true, { errorMap: () => ({ message: 'Record the patient’s consent before adding them.' }) }),
   consent_version: z.string().min(1)
 }).superRefine((v, ctx) => {
-  const t = new Date(v.dob + 'T00:00:00Z').getTime(), now = Date.now();
-  const age = (now - t) / (365.25 * 86_400_000);
-  if (!Number.isFinite(t) || age < 18 || age > 110) ctx.addIssue({ code: 'custom', message: 'The programme is for adults. Check the date of birth.', path: ['dob'] });
+  if (!v.dob && v.age === undefined) { ctx.addIssue({ code: 'custom', message: 'Enter the patient’s age, or their date of birth.', path: ['age'] }); return; }
+  const age = v.dob ? (Date.now() - new Date(v.dob + 'T00:00:00Z').getTime()) / (365.25 * 86_400_000) : v.age!;
+  if (!Number.isFinite(age) || age < 18 || age > 110) ctx.addIssue({ code: 'custom', message: 'The programme is for adults. Check the age or date of birth.', path: [v.dob ? 'dob' : 'age'] });
 });
 export type PatientInput = z.infer<typeof patientSchema>;
 

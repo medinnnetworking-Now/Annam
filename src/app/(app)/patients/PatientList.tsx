@@ -55,11 +55,13 @@ function AddPatient({ open, onClose, consentText, consentVersion }: { open: bool
       <p className="muted" style={{ margin: 0 }}>Ask the patient each question and enter their answers. Measures come next.</p>
       <form action={action} className="form">
         <label className="full">Full name<input name="name" required maxLength={80} autoComplete="off" /></label>
-        <label>Date of birth<input name="dob" type="date" required /></label>
         <label>Sex<select name="sex" required defaultValue=""><option value="" disabled>Choose</option><option value="F">Female</option><option value="M">Male</option></select></label>
-        <label className="full">Referred by<input name="referrer" defaultValue="RM Clinic" maxLength={80} required /><span className="hint">Doctor’s name and clinic.</span></label>
+        <label>Age<input name="age" type="number" inputMode="numeric" min={18} max={110} /><span className="hint">Or fill in the birth date below.</span></label>
+        <p className="muted small full" style={{ margin: 0 }}>Optional. Fill in if you have it, or leave empty.</p>
+        <label>Date of birth<input name="dob" type="date" /></label>
+        <label>Referred by<input name="referrer" placeholder="RM Clinic" maxLength={80} /></label>
         <label className="full">Family history of diabetes
-          <select name="family_history" required defaultValue=""><option value="" disabled>Choose</option><option value="none">Neither parent</option><option value="one">One parent</option><option value="both">Both parents</option></select>
+          <select name="family_history" defaultValue=""><option value="">Not asked</option><option value="none">Neither parent</option><option value="one">One parent</option><option value="both">Both parents</option></select>
         </label>
         <fieldset className="full">
           <legend>Safety questions. Tick any that apply.</legend>

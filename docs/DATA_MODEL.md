@@ -8,9 +8,9 @@ Postgres (Supabase, Mumbai) in production; embedded PGlite in development and te
 | --- | --- |
 | `accounts` | The three fixed staff logins: `nutritionist`, `rmclinic`, `admin`. Password hashes (scrypt) come from environment variables. Failed attempts and lockout. |
 | `sessions` | One row per sign-in: SHA-256 of the cookie token, the account, the **person's name** typed at sign-in, expiry, revocation. |
-| `patients` | `code` (AN-0001), name, **date of birth** (age is calculated, never stale), sex, referrer, start date, family history, triage flags, enrolment `state`, who cleared them, `is_sample`. |
+| `patients` | `code` (AN-0001), name, **date of birth** (or an age, stored as an estimated birth date with `dob_estimated`), sex, referrer, start date, family history, triage flags, enrolment `state`, who cleared them, `is_sample`. Required at registration: name, sex, age or date of birth, consent. Everything else is optional. |
 | `consents` | Consent text version, who recorded it, when; withdrawal time and who. |
-| `visits` | Label, date, 17 measures, the lifestyle answers (activity minutes, sleep, tobacco, second-hand smoke, IDRS activity), medicine yes/no (BP, cholesterol), diagnosed diabetes, confirmed warnings, entered by. |
+| `visits` | Needs one value of any kind. Label, date, 17 measures, the lifestyle answers (activity minutes, sleep, tobacco, second-hand smoke, IDRS activity), medicine yes/no (BP, cholesterol), diagnosed diabetes, confirmed warnings, entered by. |
 | `plates` | Meal, date, time, photo (JPEG ≤400 KB, metadata stripped, stored privately in the database), tags, flags, score, comment, uploaded by, reviewed by. |
 | `weekly_reviews` | Per programme week: review, goals, check-in attended, author. |
 | `score_snapshots` | One per visit: score version, score, category, components, IDRS, FIB-4, eGFR, WHtR, metabolic syndrome, status, reasons, comparable changes. |

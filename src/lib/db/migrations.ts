@@ -245,5 +245,15 @@ end $$;
 create trigger reports_lock before update or delete on reports for each row execute function annam_report_lock();
 create trigger audit_append_only before update or delete on audit_events for each row execute function annam_audit_append_only();
 `
+  },
+  {
+    id: '0002_minimal_entry',
+    sql: /* sql */ `
+-- Only name, sex, age or date of birth, and consent are required at registration.
+alter table patients alter column family_history drop not null;
+alter table patients add column dob_estimated boolean not null default false;
+-- A visit needs at least one value of any kind (the app checks which).
+alter table visits drop constraint if exists visits_check;
+`
   }
 ];

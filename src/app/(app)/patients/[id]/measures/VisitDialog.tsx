@@ -16,6 +16,21 @@ export function VisitButton({ patientId, first, today }: { patientId: string; fi
   );
 }
 
+const MORE_LABS: readonly string[] = ['Lipids', 'Liver and kidney'];
+
+function Group({ g }: { g: (typeof FIELD_GROUPS)[number] }) {
+  return (
+    <fieldset style={{ marginBottom: 12 }}>
+      <legend>{g}</legend>
+      <div className="form three" style={{ margin: 0 }}>
+        {FIELDS.filter(f => f.group === g).map(f => (
+          <label key={f.key}>{f.label} ({f.unit})<input name={f.key} type="number" step={f.step ?? '1'} min="0" inputMode="decimal" /></label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
 const YesNo = ({ name, label }: { name: string; label: string }) => (
   <label>{label}<select name={name} defaultValue=""><option value="">Not asked</option><option value="no">No</option><option value="yes">Yes</option></select></label>
 );
@@ -42,18 +57,14 @@ function VisitDialog({ patientId, first, today, onClose }: { patientId: string; 
           <label>Visit<select name="label" defaultValue={first ? 'Baseline' : 'Week 3 check-in'}>{VISIT_LABELS.filter(l => first ? l === 'Baseline' : l !== 'Baseline').map(l => <option key={l}>{l}</option>)}</select></label>
           <label>Date<input type="date" name="visit_date" defaultValue={today} max={today} required /></label>
         </div>
-        {FIELD_GROUPS.map(g => (
-          <fieldset key={g} style={{ marginBottom: 12 }}>
-            <legend>{g}</legend>
-            <div className="form three" style={{ margin: 0 }}>
-              {FIELDS.filter(f => f.group === g).map(f => (
-                <label key={f.key}>{f.label} ({f.unit})<input name={f.key} type="number" step={f.step ?? '1'} min="0" inputMode="decimal" /></label>
-              ))}
-            </div>
-          </fieldset>
-        ))}
+        <p className="muted small" style={{ margin: '0 0 8px' }}>Fill in only what was measured. One value is enough to save.</p>
+        {FIELD_GROUPS.filter(g => !MORE_LABS.includes(g)).map(g => <Group key={g} g={g} />)}
+        <details style={{ marginBottom: 12 }}>
+          <summary className="btn ghost small" style={{ cursor: 'pointer' }}>More lab values: lipids, liver and kidney</summary>
+          <div style={{ marginTop: 10 }}>{FIELD_GROUPS.filter(g => MORE_LABS.includes(g)).map(g => <Group key={g} g={g} />)}</div>
+        </details>
         <fieldset style={{ marginBottom: 12 }}>
-          <legend>Ask the patient</legend>
+          <legend>Ask the patient (optional, but each answer improves the score)</legend>
           <div className="form" style={{ margin: 0 }}>
             <label>Minutes of brisk walking or exercise in a usual week<input name="activity_minutes" type="number" min="0" max="3000" inputMode="numeric" /><span className="hint">Moderate or vigorous only.</span></label>
             <label>Hours of sleep on a usual night<input name="sleep_hours" type="number" min="0" max="24" step="0.5" inputMode="decimal" /></label>

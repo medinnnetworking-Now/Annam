@@ -26,6 +26,7 @@ test('the full programme, from walk-in to the patient summary', async ({ page })
 
   await page.getByRole('button', { name: 'Record baseline' }).click();
   const v = page.getByRole('dialog', { name: 'Record baseline' });
+  await v.getByText('More lab values').click();
   for (const [l, val] of [['Weight (kg)', '72'], ['Height (cm)', '158'], ['Waist (cm)', '92'], ['Systolic (mmHg)', '138'], ['Diastolic (mmHg)', '88'], ['Fasting glucose (mg/dL)', '118'], ['HbA1c (%)', '6.1'], ['Total cholesterol (mg/dL)', '210'], ['HDL (mg/dL)', '44'], ['Triglycerides (mg/dL)', '180'], ['Creatinine (mg/dL)', '0.8']] as const)
     await v.getByLabel(l, { exact: true }).fill(val);
   await v.getByLabel(/brisk walking/).fill('60');

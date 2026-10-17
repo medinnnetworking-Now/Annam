@@ -8,9 +8,11 @@ import { canMove, CHECKIN_DUE_FROM_DAY, clearanceNeeds, type EnrolState } from '
 import { check, friendly, isUuid, NotFound, UserError, type Ctx } from './context';
 import { CONSENT_VERSION } from '../../content/consent';
 
+export const DEFAULT_REFERRER = 'RM Clinic';
+
 export interface PatientRow {
   id: string; code: string; name: string; dob: string; sex: 'M' | 'F'; referrer: string; programme: string; start_date: string | null;
-  family_history: 'none' | 'one' | 'both'; triage: string[]; state: EnrolState; cleared_by_doctor: string | null; cleared_by_lead: string | null;
+  family_history: 'none' | 'one' | 'both' | null; dob_estimated: boolean; triage: string[]; state: EnrolState; cleared_by_doctor: string | null; cleared_by_lead: string | null;
   is_sample: boolean; created_at: string;
 }
 export interface VisitRow extends Record<string, unknown> {
@@ -156,12 +158,14 @@ export async function createPatient(db: Db, ctx: Ctx, raw: unknown): Promise<str
   if (!parsed.success) throw new UserError(parsed.error.issues[0]!.message);
   const v = parsed.data;
   if (v.consent_version !== CONSENT_VERSION) throw new UserError('The consent text has changed. Reload the page and read the new text to the patient.');
+  // Only an age given: store an estimated date of birth in the middle of that birth year.
+  const dob = v.dob ?? `${new Date().getUTCFullYear() - v.age! - (new Date().getUTCMonth() < 6 ? 1 : 0)}-07-01`;
   const run = codeLock.then(() => db.tx(ctx.actor, async q => {
     const state: EnrolState = v.triage.length ? 'not_suitable' : 'consented';
     const [{ id }] = await q.query<{ id: string }>(
-      `insert into patients (code, name, dob, sex, referrer, family_history, triage, state)
-       values ('AN-' || lpad(nextval('patient_code_seq')::text, 4, '0'), $1, $2, $3, $4, $5, $6, $7) returning id`,
-      [v.name, v.dob, v.sex, v.referrer, v.family_history, JSON.stringify(v.triage), state]) as [{ id: string }];
+      `insert into patients (code, name, dob, dob_estimated, sex, referrer, family_history, triage, state)
+       values ('AN-' || lpad(nextval('patient_code_seq')::text, 4, '0'), $1, $2, $3, $4, $5, $6, $7, $8) returning id`,
+      [v.name, dob, !v.dob, v.sex, v.referrer || DEFAULT_REFERRER, v.family_history ?? null, JSON.stringify(v.triage), state]) as [{ id: string }];
     await q.query('insert into consents (patient_id, version, recorded_by) values ($1, $2, $3)', [id, v.consent_version, ctx.actor.staff]);
     return id;
   }));

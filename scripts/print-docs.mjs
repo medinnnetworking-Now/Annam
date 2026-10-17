@@ -7,6 +7,7 @@ import { chromium } from '@playwright/test';
 
 const OUT = process.argv[2] ?? '.data/docs';
 const FONTS = process.env.ANNAM_TOUR_FONTS_CSS ? readFileSync(process.env.ANNAM_TOUR_FONTS_CSS, 'utf8') : '';
+const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const today = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' });
 
 const BASE_CSS = `
@@ -158,6 +159,89 @@ const guide = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title
 </section>
 </body></html>`;
 
+// ---------------------------------------------------------------- Quick guide (2 pages)
+const SITE = process.env.ANNAM_TOUR_LOGIN_URL ?? 'https://annam-medinn.vercel.app';
+const qstep = (n, title, body) => `<div class="qs"><b>${n}</b><div><span class="t">${title}</span>${body}</div></div>`;
+const quickGuide = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Annam: quick guide</title><style>${FONTS}${BASE_CSS}
+body { font-size: 9.5pt; }
+.qs { display: grid; grid-template-columns: 9mm 1fr; gap: 2.5mm; padding: 2.2mm 0; border-bottom: 0.3mm solid #D6E1D8; break-inside: avoid; }
+.qs > b { font-size: 16pt; color: #2E6B47; line-height: 1; }
+.qs .t { display: block; font-weight: 700; font-size: 10.5pt; color: #183D2B; margin-bottom: .5mm; }
+.tap { background: #E3EEE6; color: #183D2B; border-radius: 1.2mm; padding: 0 1.2mm; font-weight: 600; white-space: nowrap; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+.chip { display: inline-block; border-radius: 99px; padding: .3mm 2.5mm; font-weight: 600; font-size: 8.5pt; min-width: 26mm; text-align: center; }
+</style></head><body>
+<section class="page">
+  <div class="band"><div><div class="mls" style="font-size:24pt;line-height:1">അന്നം</div><h1 style="margin-top:1.5mm;font-size:20pt">Quick guide</h1><p>Annam by Medinn · RM Clinic</p></div>
+    <div style="text-align:right;font-size:9.5pt;color:#fff"><b>${esc(SITE)}</b><br>rmclinic · nutritionist · admin<br><span style="color:#BFD6C6">Passwords from Medinn</span></div></div>
+  <p style="margin:0 0 1mm"><b>Sign in:</b> username, password, and <b>your own name</b> every time. 5 wrong tries lock it for 15 minutes. <b>Only name, sex, age and consent are required</b>; leave anything else empty if you don’t have it.</p>
+  <h2>RM Clinic staff</h2>
+  ${qstep(1, 'Walk-in: add the patient', '<span class="tap">Patients → Add patient</span>. Name, sex, age. Ask the 5 safety questions. Read the consent text, tick consent, <span class="tap">Add patient</span>.')}
+  ${qstep(2, 'Baseline: record what was measured', '<span class="tap">Measures → Record baseline</span>. Weight, waist, BP, sugar on top; labs under <i>More lab values</i>. Ask: activity, sleep, tobacco, medicines (yes/no). One value is enough to save.')}
+  ${qstep(3, 'After the doctor’s consult', '<span class="tap">Overview → Record doctor clearance</span> with the doctor’s name, then <span class="tap">Start programme</span>. Day 1 of 21.')}
+  ${qstep(4, 'Every day for 3 weeks', '<span class="tap">Work queue</span>. <b>Red flags first: tell the doctor today</b>, then <span class="tap">Acknowledge alert</span> with the doctor’s name. Upload meal photos patients send: <span class="tap">Plates → Upload plate</span> (no faces).')}
+  ${qstep(5, 'Day 19 to 21: week 3 visit', '<span class="tap">Measures → Record a visit → Week 3 check-in</span>. Weight, waist, BP, fasting and post-meal sugar, triglycerides.')}
+  ${qstep(6, 'Report and approval', '<span class="tap">Report → Create report draft</span>. The doctor decides the next step. Choose it, type the doctor’s name, tick, <span class="tap">Approve report</span>. Print the <span class="tap">Patient summary</span>.')}
+  ${qstep(7, 'If the patient wants to leave', '<span class="tap">Export patient data</span> (offer a copy), then <span class="tap">Withdraw consent</span>.')}
+  <h2>Measuring right</h2>
+  <div class="cols" style="font-size:9pt">
+    <ul>
+      <li><b>Waist:</b> midway between lowest rib and top of hip bone, after breathing out.</li>
+      <li><b>BP:</b> seated, 5 min rest, 2 readings, enter the average. Both numbers.</li>
+      <li><b>Fasting sugar:</b> 8+ hours without food. mmol/L × 18 = mg/dL.</li>
+    </ul>
+    <ul>
+      <li><b>Platelets:</b> 2.5 lakh = <b>250</b>.</li>
+      <li><b>Height:</b> once is enough; it carries forward.</li>
+      <li><b>HbA1c:</b> at baseline and 12 weeks, not week 3.</li>
+    </ul>
+  </div>
+</section>
+<section class="page">
+  <div class="cols">
+    <div>
+      <h2 style="margin-top:0">Nutritionist</h2>
+      ${qstep('1', 'Review plates daily', '<span class="tap">Work queue</span> → <span class="tap">Review plate</span>. Tick food groups and flags; a score is suggested. Move the slider to set yours. Short comment in plain words.')}
+      ${qstep('2', 'Weekly review', '<span class="tap">Weekly audit</span>: review, next week’s goals, tick if the check-in was attended.')}
+      <p style="font-size:9pt">Never give medicine advice.</p>
+      <h2>Admin (with 6-digit code)</h2>
+      <ul style="font-size:9pt">
+        <li><b>Cohort:</b> totals only, no names.</li>
+        <li><b>Audit log:</b> who did what; export CSV.</li>
+        <li>Health check: <code>${esc(SITE)}/api/health</code></li>
+      </ul>
+    </div>
+    <div>
+      <h2 style="margin-top:0">The plate</h2>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:3mm;align-items:center;font-size:9pt">${plateSvg(95)}
+        <div>½ vegetables<br>¼ protein and pulses<br>¼ grains and millets<br>+ fruit and dairy</div></div>
+      <h2>Status colours</h2>
+      <table>
+        <tr><td><span class="chip" style="background:#E3EEE6;color:#183D2B">On track</span></td><td>All fine</td></tr>
+        <tr><td><span class="chip" style="background:#FBEBD0;color:#7A4E08">Needs attention</span></td><td>Score under 50 or falling</td></tr>
+        <tr><td><span class="chip" style="background:#F7DDD6;color:#8A2B18">See your doctor</span></td><td>Red flag: tell the doctor today</td></tr>
+        <tr><td><span class="chip" style="background:#F1F3F1;color:#5B6B62">Not enough data</span></td><td>Fewer than 4 of 8 score parts</td></tr>
+      </table>
+    </div>
+  </div>
+  <h2>Red flags: tell the doctor the same day</h2>
+  <div class="note alert" style="font-size:9.5pt">BP <b>160/100</b> or higher · Fasting sugar <b>250+</b> or <b>below 70</b> · FIB-4 above 2.67 · eGFR below 30 · Triglycerides 1000+</div>
+  <h2>If something goes wrong</h2>
+  <table>
+    <tr><td style="width:42%"><b>“Username and password do not match”</b></td><td>Check capital letters; copy-paste the password.</td></tr>
+    <tr><td><b>“Account is locked”</b></td><td>Wait 15 minutes.</td></tr>
+    <tr><td><b>“Something went wrong”</b></td><td>Tap Try again. If it repeats, tell the admin what you were doing.</td></tr>
+    <tr><td><b>Red box on the sign-in page</b></td><td>Server settings need attention. Tell the admin.</td></tr>
+  </table>
+  <h2>Rules</h2>
+  <ul>
+    <li>Your own name, every time. Never share passwords outside your team.</li>
+    <li>No faces in photos. Medicines only as yes/no. Never medicine advice.</li>
+    <li>Annam calculates; <b>the doctor decides</b>. Nothing is approved without the doctor’s name.</li>
+  </ul>
+</section>
+</body></html>`;
+
 // ---------------------------------------------------------------- Malayalam patient flyer
 const flyer = `<!doctype html><html lang="ml"><head><meta charset="utf-8"><title>അന്നം: രോഗികൾക്കുള്ള വിവരപത്രം</title><style>${FONTS}${BASE_CSS}
 body { font-family: 'Noto Sans Malayalam', 'Hanken Grotesk', sans-serif; font-size: 9.5pt; line-height: 1.5; }
@@ -242,7 +326,8 @@ mkdirSync(OUT, { recursive: true });
 const browser = await chromium.launch();
 for (const [name, html, footer, scale] of [
   ['Annam-field-guide.pdf', guide, 'Annam by Medinn · Field guide for data entry', 1],
-  ['Annam-patient-flyer-Malayalam.pdf', flyer, null, 0.93] // the flyer must fit one printed sheet
+  ['Annam-patient-flyer-Malayalam.pdf', flyer, null, 0.93], // the flyer must fit one printed sheet
+  ['Annam-quick-guide.pdf', quickGuide, 'Annam by Medinn · Quick guide', 1]
 ]) {
   const file = join(OUT, name.replace('.pdf', '.html'));
   writeFileSync(file, html);

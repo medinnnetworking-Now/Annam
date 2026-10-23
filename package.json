@@ -19,7 +19,7 @@
   "packageManager": "pnpm@10.28.0",
   "dependencies": {
     "@electric-sql/pglite": "0.3.8",
-    "next": "15.5.28",
+    "next": "16.4.2",
     "pg": "8.16.3",
     "react": "19.1.10",
     "react-dom": "19.1.10",

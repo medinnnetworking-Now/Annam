@@ -255,17 +255,17 @@ h2 { font-size: 11.5pt; margin: 3mm 0 1mm; }
 .en { font-family: 'Hanken Grotesk', sans-serif; }
 </style></head><body>
 <div class="band">
-  <div><h1>അന്നം</h1><p style="font-size:12.5pt;color:#fff;margin-top:2mm">നല്ല ഭക്ഷണത്തിലൂടെ ആരോഗ്യത്തിലേക്ക്: മൂന്ന് ആഴ്ചത്തെ ഭക്ഷണ പിന്തുണാ പരിപാടി</p>
+  <div><h1>അന്നം</h1><p style="font-size:12.5pt;color:#fff;margin-top:2mm">നല്ല ഭക്ഷണത്തിലൂടെ ആരോഗ്യത്തിലേക്ക്: നാല് ആഴ്ചത്തെ ഭക്ഷണ പിന്തുണാ പരിപാടി</p>
   <p class="en" style="font-size:9pt">Annam by Medinn · RM Clinic · Good Food Guru</p></div>${mark(58)}
 </div>
 <h2 style="margin-top:0">അന്നം എന്താണ്?</h2>
-<p style="margin:0">പ്രമേഹം, രക്തസമ്മർദ്ദം, ഫാറ്റി ലിവർ പോലുള്ള ജീവിതശൈലീ രോഗങ്ങൾ നിയന്ത്രിക്കാൻ <b>സഹായിക്കുന്ന</b> ഒരു ഭക്ഷണ പിന്തുണാ പരിപാടിയാണ് അന്നം. മൂന്ന് ആഴ്ച നിങ്ങൾ കഴിക്കുന്ന ഓരോ ഭക്ഷണത്തിന്റെയും ഫോട്ടോ ക്ലിനിക്കിലേക്ക് അയയ്ക്കുന്നു. ഞങ്ങളുടെ ന്യൂട്രീഷനിസ്റ്റ് ഓരോ പ്ലേറ്റും നോക്കി നിങ്ങൾക്ക് ലളിതമായ നിർദ്ദേശങ്ങൾ തരും. അവസാനം നിങ്ങളുടെ പുരോഗതി ഡോക്ടർ പരിശോധിക്കും.</p>
+<p style="margin:0">പ്രമേഹം, രക്തസമ്മർദ്ദം, ഫാറ്റി ലിവർ പോലുള്ള ജീവിതശൈലീ രോഗങ്ങൾ നിയന്ത്രിക്കാൻ <b>സഹായിക്കുന്ന</b> ഒരു ഭക്ഷണ പിന്തുണാ പരിപാടിയാണ് അന്നം. നാല് ആഴ്ച നിങ്ങൾ കഴിക്കുന്ന ഓരോ ഭക്ഷണത്തിന്റെയും ഫോട്ടോ ക്ലിനിക്കിലേക്ക് അയയ്ക്കുന്നു. ഞങ്ങളുടെ ന്യൂട്രീഷനിസ്റ്റ് ഓരോ പ്ലേറ്റും നോക്കി നിങ്ങൾക്ക് ലളിതമായ നിർദ്ദേശങ്ങൾ തരും. അവസാനം നിങ്ങളുടെ പുരോഗതി ഡോക്ടർ പരിശോധിക്കും.</p>
 <h2>എങ്ങനെയാണ് നടക്കുന്നത്?</h2>
 <div class="steps">
   <div><b>1</b><span class="t">ആദ്യ സന്ദർശനം</span>ഭാരം, അരവണ്ണം, രക്തസമ്മർദ്ദം, രക്തപരിശോധന. നിങ്ങളുടെ സമ്മതം രേഖപ്പെടുത്തും.</div>
   <div><b>2</b><span class="t">ഡോക്ടറെ കാണൽ</span>ഈ പരിപാടി നിങ്ങൾക്ക് സുരക്ഷിതമാണെന്ന് ഡോക്ടർ ഉറപ്പാക്കും.</div>
-  <div><b>3</b><span class="t">മൂന്ന് ആഴ്ച</span>ഓരോ ഭക്ഷണത്തിന്റെയും ഫോട്ടോ അയയ്ക്കുക. ആഴ്ചയിൽ ഒരിക്കൽ ന്യൂട്രീഷനിസ്റ്റുമായി സംസാരം.</div>
-  <div><b>4</b><span class="t">മൂന്നാം ആഴ്ചയിലെ സന്ദർശനം</span>അളവുകൾ വീണ്ടും എടുക്കും.</div>
+  <div><b>3</b><span class="t">നാല് ആഴ്ച</span>ഓരോ ഭക്ഷണത്തിന്റെയും ഫോട്ടോ അയയ്ക്കുക. ആഴ്ചയിൽ ഒരിക്കൽ ന്യൂട്രീഷനിസ്റ്റുമായി സംസാരം.</div>
+  <div><b>4</b><span class="t">നാലാം ആഴ്ചയിലെ സന്ദർശനം</span>അളവുകൾ വീണ്ടും എടുക്കും.</div>
   <div><b>5</b><span class="t">റിപ്പോർട്ട്</span>ഡോക്ടർ പുരോഗതി നോക്കി അടുത്ത ഘട്ടം തീരുമാനിക്കും. നിങ്ങൾക്ക് ഒരു ചെറിയ സംഗ്രഹം ലഭിക്കും.</div>
 </div>
 <div class="two" style="margin-top:3mm">
@@ -311,7 +311,93 @@ h2 { font-size: 11.5pt; margin: 3mm 0 1mm; }
 <div class="box" style="margin-top:3mm;background:#F5F8F3">
   <h2 style="margin-top:0">ഫോട്ടോകൾ അയയ്ക്കേണ്ടത് / സംശയങ്ങൾക്ക്</h2>
   <p style="margin:0">RM ക്ലിനിക് വാട്‌സ്ആപ്പ്: <span class="fill">&nbsp;</span> &nbsp; ഫോൺ: <span class="fill">&nbsp;</span></p>
-  <p style="margin:2mm 0 0">എന്റെ പരിപാടി തുടങ്ങുന്ന തീയതി: <span class="fill">&nbsp;</span> &nbsp; മൂന്നാം ആഴ്ചയിലെ സന്ദർശനം: <span class="fill">&nbsp;</span></p>
+  <p style="margin:2mm 0 0">എന്റെ പരിപാടി തുടങ്ങുന്ന തീയതി: <span class="fill">&nbsp;</span> &nbsp; നാലാം ആഴ്ചയിലെ സന്ദർശനം: <span class="fill">&nbsp;</span></p>
+</div>
+<p class="muted en" style="font-size:7.5pt;margin:2mm 0 0">Annam by Medinn · RM Clinic · Good Food Guru · Supports care; does not replace medical advice.</p>
+</body></html>`;
+
+// ---------------------------------------------------------------- Malayalam "30-day resolution" flyer
+const resolution = `<!doctype html><html lang="ml"><head><meta charset="utf-8"><title>30 ദിവസം, നിങ്ങൾക്ക് വേണ്ടി</title><style>${FONTS}${BASE_CSS}
+body { font-family: 'Noto Sans Malayalam', 'Hanken Grotesk', sans-serif; font-size: 9.5pt; line-height: 1.5; }
+h1 { font-family: 'Noto Serif Malayalam', serif; font-size: 27pt; line-height: 1.15; margin: 1mm 0 0; }
+h2 { font-size: 11.5pt; margin: 3mm 0 1mm; }
+.hero { background: linear-gradient(135deg, #1F5F4A 0%, #2E6B47 60%, #B7791F 140%); color: #fff; border-radius: 4mm; padding: 6mm 8mm; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4mm; }
+.hero .tag { display: inline-block; background: #F6D9A5; color: #5a3a06; font-weight: 700; font-size: 9pt; border-radius: 10mm; padding: .6mm 4mm; }
+.hero p { color: #fff; }
+.steps3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5mm; margin: 2mm 0 1mm; }
+.steps3 div { background: #F5F8F3; border: 0.3mm solid #D6E1D8; border-radius: 3mm; padding: 2.5mm 3mm; font-size: 8.8pt; line-height: 1.45; }
+.steps3 b { display: block; font-size: 11pt; color: #B7791F; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+.box { border: 0.3mm solid #D6E1D8; border-radius: 3mm; padding: 2.5mm 3.5mm; break-inside: avoid; }
+.box ul { font-size: 8.8pt !important; margin: 0; } .box li { margin: 0 0 .6mm; }
+.platebox { display: grid; grid-template-columns: auto 1fr; gap: 4mm; align-items: center; }
+.key { display: inline-block; width: 3mm; height: 3mm; border-radius: 1mm; margin-right: 1.5mm; vertical-align: middle; }
+.fill { display: inline-block; min-width: 70mm; border-bottom: 0.3mm solid #17251E; }
+.grid30 { display: grid; grid-template-columns: repeat(15, 1fr); gap: 1.2mm; margin-top: 1.5mm; }
+.grid30 span { border: 0.3mm solid #B7791F; border-radius: 1.2mm; text-align: center; font-size: 7pt; color: #B7791F; padding: .4mm 0; }
+.en { font-family: 'Hanken Grotesk', sans-serif; }
+</style></head><body>
+<div class="hero">
+  <div><span class="tag">പുതുവർഷ തീരുമാനം</span>
+    <h1>30 ദിവസം,<br>നിങ്ങൾക്ക് വേണ്ടി</h1>
+    <p style="font-size:11.5pt;margin-top:2mm">ഈ വർഷം നല്ല ഭക്ഷണ ശീലത്തോടെ തുടങ്ങാം.</p>
+    <p class="en" style="font-size:9pt">Annam by Medinn · RM Clinic · Good Food Guru</p></div>${mark(58)}
+</div>
+<p style="margin:3mm 0 0">30 ദിവസം നിങ്ങൾ <b>നിങ്ങൾക്ക് വേണ്ടി</b> ഭക്ഷണം കഴിക്കുക: ശരീരത്തിന്റെ ആവശ്യത്തിനനുസരിച്ച്, വയറിന് സുഖമായി. ഒരു നല്ല ഭക്ഷണ സംസ്കാരം എങ്ങനെ വാർത്തെടുക്കാം, <b>എങ്ങനെ കഴിക്കാം, എത്ര കഴിക്കാം</b> എന്ന് പഠിക്കാനുള്ള 30 ദിവസം. നിങ്ങളുടെ പ്ലേറ്റുകൾ ഓരോന്നായി നോക്കി എങ്ങനെ, എത്ര എന്ന് പറഞ്ഞുതരാൻ ന്യൂട്രീഷനിസ്റ്റുകൾ കൂടെയുണ്ടാകും.</p>
+<p style="margin:1.5mm 0 0">രക്തപരിശോധനയിലൂടെ നിങ്ങളുടെ ശരീരത്തിലെ ഓരോ ഘടകത്തിലും എത്രത്തോളം മാറ്റം വരുന്നുണ്ടെന്നും അറിയാം. 30 ദിവസത്തിലൂടെ <b>ഒരു പുതിയ നിങ്ങളെ</b> കാണാം. പ്രമേഹമോ ഹൃദ്രോഗമോ മറ്റ് ഏത് അസുഖമോ ഉണ്ടെങ്കിലും, അതിൽ ഭക്ഷണത്തിന് ഒരു പങ്കുണ്ട്. നല്ല ഭക്ഷണരീതി എങ്ങനെ ഉണ്ടാക്കാം എന്ന് 30 ദിവസം RM-ലൂടെ.</p>
+<h2>30 ദിവസം ഇങ്ങനെ</h2>
+<div class="steps3">
+  <div><b>ദിവസം 1</b>ഭാരം, അരവണ്ണം, രക്തസമ്മർദ്ദം, രക്തപരിശോധന. ഈ പരിപാടി നിങ്ങൾക്ക് സുരക്ഷിതമാണെന്ന് ഡോക്ടർ ഉറപ്പാക്കും. നിങ്ങളുടെ സമ്മതം രേഖപ്പെടുത്തും.</div>
+  <div><b>ദിവസം 1 മുതൽ 30 വരെ</b>ഓരോ ഭക്ഷണത്തിന്റെയും ഫോട്ടോ അയയ്ക്കുക. ന്യൂട്രീഷനിസ്റ്റ് ഓരോ പ്ലേറ്റും നോക്കി എങ്ങനെ, എത്ര എന്ന് പറഞ്ഞുതരും.</div>
+  <div><b>ദിവസം 30</b>അളവുകൾ വീണ്ടും എടുക്കും. ഡോക്ടർ പുരോഗതി നോക്കി അടുത്ത ഘട്ടം തീരുമാനിക്കും. നിങ്ങൾക്ക് ഒരു ചെറിയ സംഗ്രഹം ലഭിക്കും.</div>
+</div>
+<div class="box" style="margin-top:3mm;border-color:#E9C98A;background:#FDF3E1">
+  <h2 style="margin-top:0;color:#8A5A12">എന്റെ 30 ദിവസത്തെ തീരുമാനം</h2>
+  <p style="margin:0">ഞാൻ ഇത് ചെയ്യും: <span class="fill">&nbsp;</span> &nbsp; തുടങ്ങുന്ന തീയതി: <span class="fill" style="min-width:40mm">&nbsp;</span></p>
+  <p style="margin:1.5mm 0 0;font-size:8.5pt">എല്ലാ ഭക്ഷണത്തിന്റെയും ഫോട്ടോ അയച്ച ദിവസം ഒരു കള്ളി പൂരിപ്പിക്കുക.</p>
+  <div class="grid30">${Array.from({ length: 30 }, (_, i) => `<span>${i + 1}</span>`).join('')}</div>
+</div>
+<div class="two" style="margin-top:3mm">
+  <div class="box">
+    <h2 style="margin-top:0">സമീകൃത പ്ലേറ്റ്</h2>
+    <div class="platebox">${plateSvg(100)}
+      <div style="font-size:8.8pt;line-height:1.5">
+        <div><span class="key" style="background:#7DB06B"></span><b>പകുതി:</b> പച്ചക്കറികൾ (തോരൻ, അവിയൽ, സാലഡ്)</div>
+        <div><span class="key" style="background:#E3A03A"></span><b>കാൽ ഭാഗം:</b> പയർ, പരിപ്പ്, മീൻ, മുട്ട, ചിക്കൻ</div>
+        <div><span class="key" style="background:#E9DDC3;border:0.2mm solid #cbbf9f"></span><b>കാൽ ഭാഗം:</b> ചോറ്, ചപ്പാത്തി, ചെറുധാന്യങ്ങൾ</div>
+        <div><span class="key" style="background:#D8553F"></span><span class="key" style="background:#CFE0F0"></span>കൂടെ ഒരു പഴവും മോര്/തൈരും</div>
+      </div>
+    </div>
+  </div>
+  <div class="box">
+    <h2 style="margin-top:0">ഫോട്ടോ എടുക്കുമ്പോൾ</h2>
+    <ul>
+      <li>കഴിക്കുന്നതിന് <b>മുമ്പ്</b>, പ്ലേറ്റിന്റെ <b>മുകളിൽ നിന്ന്</b> ഫോട്ടോ എടുക്കുക.</li>
+      <li>എല്ലാ ഭക്ഷണവും: പ്രഭാതഭക്ഷണം, ഉച്ചഭക്ഷണം, ലഘുഭക്ഷണം, അത്താഴം; ചായ, ജ്യൂസ്, മധുരവും.</li>
+      <li>ഫോട്ടോയിൽ <b>മുഖങ്ങൾ വരരുത്</b>.</li>
+    </ul>
+  </div>
+</div>
+<div class="two" style="margin-top:3mm">
+  <div class="box" style="border-color:#E8B4A6;background:#FDF6F3">
+    <h2 style="margin-top:0;color:#8A2B18">ശ്രദ്ധിക്കുക</h2>
+    <ul>
+      <li>ഡോക്ടറോട് ചോദിക്കാതെ <b>മരുന്നുകൾ നിർത്തുകയോ മാറ്റുകയോ ചെയ്യരുത്</b>.</li>
+      <li>തലകറക്കം, വിറയൽ, അമിതമായ വിയർപ്പ്, നെഞ്ചുവേദന ഉണ്ടായാൽ <b>ഉടൻ ഡോക്ടറെ കാണുക</b>.</li>
+      <li>ഇത് ഡോക്ടറുടെ ചികിത്സയ്ക്ക് പകരമല്ല; ഒരു പിന്തുണ മാത്രമാണ്.</li>
+    </ul>
+  </div>
+  <div class="box">
+    <h2 style="margin-top:0">നിങ്ങളുടെ വിവരങ്ങൾ</h2>
+    <ul>
+      <li>ക്ലിനിക് ടീമിനും ന്യൂട്രീഷനിസ്റ്റിനും മാത്രമേ കാണാനാകൂ; ഇന്ത്യയിൽ സുരക്ഷിതമായി സൂക്ഷിക്കുന്നു.</li>
+      <li>വിവരങ്ങൾ വിൽക്കുകയോ പരസ്യത്തിന് ഉപയോഗിക്കുകയോ ഇല്ല.</li>
+      <li>എപ്പോൾ വേണമെങ്കിലും പരിപാടിയിൽ നിന്ന് പിന്മാറാം.</li>
+    </ul>
+  </div>
+</div>
+<div class="box" style="margin-top:3mm;background:#F5F8F3">
+  <p style="margin:0"><b>ഫോട്ടോകൾ അയയ്ക്കേണ്ടത് / സംശയങ്ങൾക്ക്:</b> RM ക്ലിനിക് വാട്‌സ്ആപ്പ്: <span class="fill" style="min-width:32mm">&nbsp;</span> &nbsp; ഫോൺ: <span class="fill" style="min-width:30mm">&nbsp;</span></p>
 </div>
 <p class="muted en" style="font-size:7.5pt;margin:2mm 0 0">Annam by Medinn · RM Clinic · Good Food Guru · Supports care; does not replace medical advice.</p>
 </body></html>`;
@@ -321,6 +407,7 @@ const browser = await chromium.launch();
 for (const [name, html, footer, scale] of [
   ['Annam-field-guide.pdf', guide, 'Annam by Medinn · Field guide for data entry', 1],
   ['Annam-patient-flyer-Malayalam.pdf', flyer, null, 0.93], // the flyer must fit one printed sheet
+  ['Annam-30-day-resolution-flyer-Malayalam.pdf', resolution, null, 0.9],
   ['Annam-quick-guide.pdf', quickGuide, 'Annam by Medinn · Quick guide', 1]
 ]) {
   const file = join(OUT, name.replace('.pdf', '.html'));
